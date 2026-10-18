@@ -449,6 +449,20 @@ footer {
     transition: none !important;
   }
 }
+
+/* Доска почёта */
+.honor-intro { color: var(--muted); margin-bottom: 20px !important; }
+.honor-group { margin: 22px 0; }
+.honor-heading { display: flex; align-items: center; gap: 9px; margin: 0 0 12px; font-size: 16px; color: #f4f5ff; }
+.honor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.honor-person { min-width: 0; border: 1px solid var(--line); background: linear-gradient(140deg,#252c44,#1b2033); border-radius: 15px; padding: 14px; transition: transform .2s, border-color .2s; }
+.honor-person:hover { transform: translateY(-3px); border-color: #82aaff88; }
+.honor-person strong { display: block; color: #fff; font-size: 14px; line-height: 1.5; }
+.honor-person small { display: block; color: var(--muted); font-size: 12px; line-height: 1.6; margin-top: 5px; }
+.honor-person .honor-date { color: var(--blue); font-size: 12px; margin-top: 5px; display: block; }
+.honor-person.featured { border-color: #e4bf7766; background: linear-gradient(145deg,#35304a,#24273c); }
+.honor-note { text-align: center; color: var(--muted); font-size: 12px; font-style: italic; margin-top: 22px !important; }
+@media (max-width: 420px) { .honor-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 
@@ -529,6 +543,16 @@ footer {
       <span>
         <span class="card-title">Мой путь</span>
         <span class="card-desc">Главы, даты и перемены</span>
+      </span>
+    </button>
+
+    <button class="card" data-modal="honor">
+      <span class="card-top">
+        <span class="card-icon">🏆</span><span class="arrow">↗</span>
+      </span>
+      <span>
+        <span class="card-title">Доска почёта</span>
+        <span class="card-desc">Люди, ставшие частью истории Virotos</span>
       </span>
     </button>
 
@@ -658,6 +682,46 @@ const pages = {
           Копировать Telegram
         </button>
       </div>`
+  },
+
+  honor: {
+    title: "Доска почёта Virotos",
+    html: `
+      <p class="honor-intro">Эта страница посвящена людям, которые были рядом с Virotos с самого начала, помогали проекту и оставили след в его истории.</p>
+      <section class="honor-group">
+        <h4 class="honor-heading">👑 Основатели</h4>
+        <div class="honor-grid">
+          <div class="honor-person featured"><strong>Virotos</strong><small>Создатель и организатор проекта</small></div>
+          <div class="honor-person featured"><strong>Дмитрий Алексеевич</strong><small>Заместитель, правая рука и близкий друг</small></div>
+        </div>
+      </section>
+      <section class="honor-group">
+        <h4 class="honor-heading">🌟 Первые из первых — олды</h4>
+        <div class="honor-grid">
+          <div class="honor-person"><strong>Серж</strong><span class="honor-date">24.01.2022</span><small>Первый подписчик</small></div>
+          <div class="honor-person"><strong>Кира</strong><span class="honor-date">04.06.2022</span><small>Одна из первых</small></div>
+          <div class="honor-person"><strong>Даниил</strong><span class="honor-date">07.06.2022</span><small>Один из первых</small></div>
+        </div>
+      </section>
+      <section class="honor-group">
+        <h4 class="honor-heading">💎 Топ-донатер</h4>
+        <div class="honor-grid">
+          <div class="honor-person featured"><strong>Роман</strong><small>Особая благодарность за поддержку проекта</small></div>
+        </div>
+      </section>
+      <section class="honor-group">
+        <h4 class="honor-heading">🎬 Virotos Team — бывший состав</h4>
+        <div class="honor-grid">
+          <div class="honor-person"><strong>Virotos</strong><small>Организатор, главный сценарист, редактор, монтажёр</small></div>
+          <div class="honor-person"><strong>Дмитрий Алексеевич</strong><small>Режиссёр, оператор, заместитель</small></div>
+          <div class="honor-person"><strong>Visniaq</strong><small>Старший модератор, участница видео</small></div>
+          <div class="honor-person"><strong>Daopow</strong><small>Оператор, сценарист</small></div>
+          <div class="honor-person"><strong>LilSkyyy</strong><small>Модератор, тестер</small></div>
+          <div class="honor-person"><strong>Jobs_02</strong><small>Монтажёр</small></div>
+          <div class="honor-person"><strong>Диана</strong><small>Монтажёр</small></div>
+        </div>
+      </section>
+      <p class="honor-note">Время идёт, но вклад этих людей остаётся частью истории Virotos. ✦</p>`
   },
 
   journey: {
