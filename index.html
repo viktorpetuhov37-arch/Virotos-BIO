@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0e1019">
-<title>Virotos — обо мне</title>
+<title>Virotos — мой мир, музыка и истории</title>
 
 <style>
 :root {
@@ -133,13 +133,13 @@ h2 { font-size: 19px; margin: 0; }
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 13px;
 }
 
 .card {
-  grid-column: span 2;
-  min-height: 145px;
+  grid-column: span 1;
+  min-height: 166px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -155,10 +155,6 @@ h2 { font-size: 19px; margin: 0; }
               background .23s ease, box-shadow .23s ease;
 }
 
-.card:nth-child(4), .card:nth-child(5) {
-  grid-column: span 3;
-  min-height: 125px;
-}
 
 .card:hover {
   transform: translateY(-5px);
@@ -423,7 +419,7 @@ footer {
 
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-  .card, .card:nth-child(4), .card:nth-child(5) {
+  .card {
     grid-column: span 1;
     min-height: 140px;
     padding: 15px;
@@ -463,6 +459,54 @@ footer {
 .honor-person.featured { border-color: #e4bf7766; background: linear-gradient(145deg,#35304a,#24273c); }
 .honor-note { text-align: center; color: var(--muted); font-size: 12px; font-style: italic; margin-top: 22px !important; }
 @media (max-width: 420px) { .honor-grid { grid-template-columns: 1fr; } }
+
+/* Новый раздел «Обо мне»: биография, соцсети и контакты */
+.profile-intro { display: flex; gap: 17px; align-items: flex-start; }
+.profile-mark { flex: 0 0 58px; width: 58px; height: 58px; display: grid; place-items: center; font-size: 29px; font-weight: 900; color: #e6ecff; border: 1px solid #82aaff50; border-radius: 17px; background: linear-gradient(140deg, #2c4168, #3e3156); }
+.profile-intro h4 { font-size: 23px; margin: 2px 0 10px; color: #fff; }
+.profile-intro p { font-size: 14px; line-height: 1.85; color: #cbd2ea; }
+.profile-kicker { font-size: 11px; color: var(--blue); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+.profile-divider { border-top: 1px solid var(--line); margin: 23px 0; }
+.profile-subtitle { margin: 22px 0 12px; font-size: 16px; color: #f2f4ff; }
+.social-stack { display: grid; gap: 9px; }
+.social-link { display: flex; align-items: center; gap: 12px; padding: 13px; min-width: 0; border-radius: 15px; background: linear-gradient(125deg, #242b43, #1c2133); border: 1px solid var(--line); color: #edf1ff; text-decoration: none; transition: border-color .2s, transform .2s; }
+a.social-link:hover { border-color: #82aaff80; transform: translateY(-2px); }
+.social-link > span:last-child { color: var(--blue); }
+.social-icon { flex: 0 0 38px; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; color: var(--blue); background: #82aaff18; font-weight: 800; }
+.social-meta { display: grid; flex: 1 1 auto; min-width: 0; gap: 2px; }
+.social-meta strong { font-size: 14px; }
+.social-meta small { color: var(--muted); line-height: 1.5; font-size: 12px; overflow-wrap: anywhere; }
+.social-copy { flex: 0 0 auto; padding: 7px 9px; background: #82aaff17; border: 1px solid #82aaff38; color: #c9d8ff; border-radius: 9px; font-size: 11px; cursor: pointer; }
+.social-copy:hover { background: #82aaff32; }
+
+/* Музыкальный плеер, открываемый в стандартном модальном окне */
+.music-card { background: linear-gradient(140deg, #202a46, #25203a); border-color: #a1a8ff38; }
+.music-card .card-icon { color: #d9c5ff; background: #c3a6ff23; }
+.music-player { margin: -2px auto 0; max-width: 420px; text-align: center; }
+.music-art { position: relative; height: clamp(170px, 48vw, 245px); overflow: hidden; border-radius: 18px; border: 1px solid #ffffff20; background: radial-gradient(circle at 52% 37%, #899cc159 0, transparent 26%), linear-gradient(180deg,#253a60 0%,#26304b 48%,#131b2c 100%); }
+.music-art::before { content: ''; position: absolute; inset: -30%; transform: rotate(-17deg); background: repeating-linear-gradient(90deg, transparent 0 20px, #bfceff25 21px, transparent 23px, transparent 42px); opacity: .45; }
+.music-art::after { content: ''; position: absolute; bottom: -1px; left: -15%; width: 130%; height: 25%; background: linear-gradient(0deg, #0e1628 0%, #16264187 80%, transparent); border-radius: 50% 50% 0 0; }
+.music-art-moon { position: absolute; top: 17%; left: 41%; width: 78px; height: 78px; border-radius: 100%; background: #b4c3df5c; box-shadow: 0 0 55px #adbbdd6f; }
+.music-art-lines { position: absolute; bottom: 11px; left: 20px; width: 45%; height: 45px; border-top: 1px solid #adbeed38; transform: rotate(-8deg); }
+.music-art-label { position: absolute; top: 15px; left: 16px; font-size: 10px; font-weight: 800; letter-spacing: 3px; color: #cfddfa; }
+.music-art-symbol { position: absolute; bottom: 0; right: 18px; font-size: 105px; line-height: 1.2; opacity: .15; color: #e6efff; }
+.music-release-status { margin-top: 17px; font-size: 11px; color: #b7c8ee; letter-spacing: .3px; }
+.music-title { font-size: clamp(22px,6vw,30px); color: #fff; margin: 6px 0 0; letter-spacing: -.6px; line-height: 1.3; }
+.music-artist { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.music-seek-row { margin: 24px 0 13px; }
+.music-seek, .music-volume input { width: 100%; accent-color: #a4b9ff; cursor: pointer; }
+.music-seek { display: block; margin: 0; }
+.music-times { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; color: #aab6d2; font-size: 12px; margin-top: 5px; }
+.music-controls { position: relative; display: flex; align-items: center; justify-content: center; min-height: 72px; }
+.music-play { width: 65px; height: 65px; border: 0; border-radius: 50%; background: linear-gradient(135deg,var(--blue),var(--purple)); color: #0d1425; font-size: 25px; cursor: pointer; box-shadow: 0 8px 30px #82aaff35; transition: transform .2s; }
+.music-play:hover { transform: scale(1.06); }
+.music-play:focus-visible, .music-seek:focus-visible, .music-volume input:focus-visible, .social-link:focus-visible, .social-copy:focus-visible { outline: 2px solid #d7dbff; outline-offset: 3px; }
+.music-volume { position: absolute; right: 0; display: flex; align-items: center; gap: 7px; width: 30%; color: #b7c8ee; }
+.music-volume input { width: 100%; min-width: 45px; }
+.music-footnote { margin-top: 18px !important; color: #9baacb; font-size: 11px; line-height: 1.7; }
+.music-error { background: #7229344f; color: #ffd5d9; padding: 8px; border-radius: 8px; font-size: 12px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media(max-width:420px) { .profile-intro { flex-direction: column; } .social-contact { flex-wrap: wrap; } .social-contact .social-copy { margin-left: 50px; } .music-art-moon { left: 38%; } }
 </style>
 </head>
 
@@ -475,7 +519,7 @@ footer {
   </header>
 
   <section class="hero">
-    <div class="eyebrow">Немного обо мне</div>
+    <div class="eyebrow">VIROTOS / Личная вселенная</div>
     <h1>Добро пожаловать<span>!</span></h1>
     <p class="intro">
       Я Витя — человек, который пробует, создаёт, ошибается,
@@ -490,53 +534,33 @@ footer {
   </section>
 
   <div class="section-heading">
-    <h2>Выбери, что хочешь узнать</h2>
+    <h2>Загляни в мой мир</h2>
     <p>Нажми на карточку, чтобы открыть раздел</p>
   </div>
 
-  <section class="cards">
+  <section class="cards" aria-label="Разделы сайта">
 
-    <button class="card" data-modal="about">
+    <button class="card" data-modal="about" type="button">
       <span class="card-top">
         <span class="card-icon">✦</span><span class="arrow">↗</span>
       </span>
       <span>
-        <span class="card-title">Кто я?</span>
-        <span class="card-desc">Мой характер и интересы</span>
+        <span class="card-title">Обо мне</span>
+        <span class="card-desc">Кто я, чем живу и где меня найти</span>
       </span>
     </button>
 
-    <button class="card" data-modal="telegram">
+    <button class="card music-card" data-modal="music" type="button">
       <span class="card-top">
-        <span class="card-icon">➤</span><span class="arrow">↗</span>
+        <span class="card-icon">♫</span><span class="arrow">↗</span>
       </span>
       <span>
-        <span class="card-title">Telegram канал</span>
-        <span class="card-desc">Всё подряд, для своих</span>
+        <span class="card-title">Моя музыка</span>
+        <span class="card-desc">Авторские треки и первые демо</span>
       </span>
     </button>
 
-    <button class="card" data-modal="youtube">
-      <span class="card-top">
-        <span class="card-icon">▶</span><span class="arrow">↗</span>
-      </span>
-      <span>
-        <span class="card-title">Youtube канал</span>
-        <span class="card-desc">Видео и воспоминания</span>
-      </span>
-    </button>
-
-    <button class="card" data-modal="contact">
-      <span class="card-top">
-        <span class="card-icon">✉</span><span class="arrow">↗</span>
-      </span>
-      <span>
-        <span class="card-title">Связь</span>
-        <span class="card-desc">Почта и Telegram в один клик</span>
-      </span>
-    </button>
-
-    <button class="card" data-modal="journey">
+    <button class="card" data-modal="journey" type="button">
       <span class="card-top">
         <span class="card-icon">⌁</span><span class="arrow">↗</span>
       </span>
@@ -546,7 +570,7 @@ footer {
       </span>
     </button>
 
-    <button class="card" data-modal="honor">
+    <button class="card" data-modal="honor" type="button">
       <span class="card-top">
         <span class="card-icon">🏆</span><span class="arrow">↗</span>
       </span>
@@ -627,60 +651,75 @@ const journey = [
 
 const pages = {
   about: {
-    title: "Кто я?",
+    title: "Обо мне и связь",
     html: `
-      <p>Привет! Кто я? Витя, Virotos или же Viktor Life — да всё сразу.</p>
-      <p>Мне 20 лет. Учусь в ВУЗе на электроэнергетике. Люблю творчество:
-      пение, музыку, рисование, готовку и многое другое.</p>
-      <p>Сам по себе весёлый и добрый парень — возможно,
-      немного скромный поначалу.</p>`
-  },
-
-  telegram: {
-    title: "Telegram канал",
-    html: `
-      <p>Мой телеграм-канал: раньше хайповал, а сейчас не очень.
-      Для избранных — публикую всё подряд.</p>
-      <div class="actions">
-        <a class="action primary" href="https://t.me/viktor_l1fe"
-           target="_blank" rel="noopener noreferrer">Перейти в канал ↗</a>
-        <button class="action" data-copy="https://t.me/viktor_l1fe">
-          Скопировать ссылку
-        </button>
-      </div>`
-  },
-
-  youtube: {
-    title: "Youtube канал",
-    html: `
-      <p>Омагад, это моё детище! Было весело снимать видосики в 2023 году.
-      Потом я забросил канал, но иногда могу вернуться, как в старые добрые ;)</p>
-      <p>Мини-факт: раньше канал назывался Virotos Team —
-      да, у меня была команда :0</p>
-      <div class="actions">
-        <a class="action primary" href="https://www.youtube.com/@Virotos"
-           target="_blank" rel="noopener noreferrer">Перейти в канал ↗</a>
-        <button class="action" data-copy="https://www.youtube.com/@Virotos">
-          Скопировать ссылку
-        </button>
-      </div>`
-  },
-
-  contact: {
-    title: "Связь",
-    html: `
-      <p>Нажми на кнопку рядом с контактом, чтобы скопировать его.</p>
-      <div class="contact-row">
-        <span>✉ Viktorpetuhov37@gmail.com</span>
-        <button class="action" data-copy="Viktorpetuhov37@gmail.com">
-          Копировать почту
-        </button>
+      <div class="profile-intro">
+        <span class="profile-mark" aria-hidden="true">V</span>
+        <div>
+          <span class="profile-kicker">Привет, я Virotos</span>
+          <h4>Витя / Viktor Life</h4>
+          <p>Мне 20 лет. Учусь на направлении электроэнергетики, люблю музыку, пение, рисование, готовку и любые творческие идеи. Пишу свои песни и постепенно воплощаю проекты в жизнь.</p>
+          <p>Я весёлый, добрый и поначалу немного скромный. Этот сайт — место для моих историй, музыки и всего, что мне интересно.</p>
+        </div>
       </div>
-      <div class="contact-row">
-        <span>➤ @Virotos</span>
-        <button class="action" data-copy="@Virotos">
-          Копировать Telegram
-        </button>
+      <div class="profile-divider"></div>
+      <h4 class="profile-subtitle">Мои соцсети</h4>
+      <div class="social-stack">
+        <a class="social-link" href="https://t.me/viktor_l1fe" target="_blank" rel="noopener noreferrer">
+          <span class="social-icon" aria-hidden="true">➤</span>
+          <span class="social-meta"><strong>Telegram-канал</strong><small>Viktor Life — новости, творчество и жизнь</small></span>
+          <span aria-hidden="true">↗</span>
+        </a>
+        <a class="social-link" href="https://www.youtube.com/@Virotos" target="_blank" rel="noopener noreferrer">
+          <span class="social-icon" aria-hidden="true">▶</span>
+          <span class="social-meta"><strong>YouTube</strong><small>Видео и воспоминания из времён Virotos Team</small></span>
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <h4 class="profile-subtitle">Связаться со мной</h4>
+      <div class="social-stack">
+        <div class="social-link social-contact">
+          <span class="social-icon" aria-hidden="true">✉</span>
+          <span class="social-meta"><strong>Почта</strong><small>Viktorpetuhov37@gmail.com</small></span>
+          <button class="social-copy" type="button" data-copy="Viktorpetuhov37@gmail.com" aria-label="Скопировать адрес электронной почты">Копировать</button>
+        </div>
+        <div class="social-link social-contact">
+          <span class="social-icon" aria-hidden="true">@</span>
+          <span class="social-meta"><strong>Telegram</strong><small>@Virotos</small></span>
+          <button class="social-copy" type="button" data-copy="@Virotos" aria-label="Скопировать Telegram">Копировать</button>
+        </div>
+      </div>`
+  },
+
+  music: {
+    title: "Virotos Music",
+    html: `
+      <div class="music-player" id="musicPlayer">
+        <div class="music-art" aria-hidden="true">
+          <div class="music-art-moon"></div>
+          <div class="music-art-lines"></div>
+          <span class="music-art-label">VIROTOS / MUSIC</span>
+          <span class="music-art-symbol">☂</span>
+        </div>
+        <div class="music-release-status">◌ Неизданный трек · дата релиза не объявлена</div>
+        <h4 class="music-title">Когда идёт дождь</h4>
+        <div class="music-artist">Virotos</div>
+        <audio id="musicAudio" preload="metadata" src="music/kogda-idet-dozhd.mp3"></audio>
+        <div class="music-seek-row">
+          <label for="musicSeek" class="visually-hidden">Перемотка трека</label>
+          <input id="musicSeek" class="music-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Положение воспроизведения">
+          <div class="music-times"><span id="musicNow">0:00</span><span id="musicDuration">2:35</span></div>
+        </div>
+        <div class="music-controls">
+          <button type="button" class="music-play" id="musicPlay" aria-label="Воспроизвести трек">▶</button>
+          <div class="music-volume">
+            <span aria-hidden="true">♫</span>
+            <label for="musicVolume" class="visually-hidden">Громкость</label>
+            <input type="range" id="musicVolume" min="0" max="1" step="0.05" value="0.85" aria-label="Громкость">
+          </div>
+        </div>
+        <p class="music-error" id="musicError" role="alert" hidden>Не удалось загрузить трек. Проверь подключение и наличие MP3.</p>
+        <p class="music-footnote">Это предварительное прослушивание. Трек пока официально не выходил.</p>
       </div>`
   },
 
@@ -740,6 +779,63 @@ const pages = {
   }
 };
 
+
+function initMusicPlayer() {
+  const audio = document.getElementById("musicAudio");
+  const play = document.getElementById("musicPlay");
+  const seek = document.getElementById("musicSeek");
+  const now = document.getElementById("musicNow");
+  const duration = document.getElementById("musicDuration");
+  const volume = document.getElementById("musicVolume");
+  const error = document.getElementById("musicError");
+  if (!audio) return;
+
+  const clock = value => {
+    if (!Number.isFinite(value) || value < 0) return "0:00";
+    const whole = Math.floor(value);
+    return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+  };
+
+  const refresh = () => {
+    now.textContent = clock(audio.currentTime);
+    if (Number.isFinite(audio.duration)) {
+      duration.textContent = clock(audio.duration);
+      seek.value = Math.round((audio.currentTime / audio.duration) * 1000) || 0;
+    }
+    const paused = audio.paused;
+    play.textContent = paused ? "▶" : "Ⅱ";
+    play.setAttribute("aria-label", paused ? "Воспроизвести трек" : "Поставить на паузу");
+  };
+
+  play.addEventListener("click", async () => {
+    if (audio.paused) {
+      try {
+        error.hidden = true;
+        await audio.play();
+      } catch (e) {
+        error.hidden = false;
+      }
+    } else {
+      audio.pause();
+    }
+    refresh();
+  });
+  audio.addEventListener("loadedmetadata", refresh);
+  audio.addEventListener("timeupdate", refresh);
+  audio.addEventListener("play", refresh);
+  audio.addEventListener("pause", refresh);
+  audio.addEventListener("ended", refresh);
+  audio.addEventListener("error", () => { error.hidden = false; refresh(); });
+  seek.addEventListener("input", () => {
+    if (Number.isFinite(audio.duration) && audio.duration > 0) {
+      audio.currentTime = audio.duration * Number(seek.value) / 1000;
+      refresh();
+    }
+  });
+  volume.addEventListener("input", () => { audio.volume = Number(volume.value); });
+  audio.volume = Number(volume.value);
+}
+
 function openModal(key, trigger) {
   const page = pages[key];
   if (!page) return;
@@ -747,6 +843,7 @@ function openModal(key, trigger) {
   previousFocus = trigger || document.activeElement;
   modalTitle.textContent = page.title;
   modalBody.innerHTML = page.html;
+  if (key === "music") initMusicPlayer();
 
   // Каждый новый раздел начинается сверху.
   modalBody.scrollTop = 0;
@@ -758,6 +855,8 @@ function openModal(key, trigger) {
 }
 
 function closeModal() {
+  const audio = modalBody.querySelector("#musicAudio");
+  if (audio) audio.pause();
   backdrop.classList.remove("open");
   document.body.style.overflow = "";
 
