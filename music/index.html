@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0e1019">
+  <meta name="description" content="Virotos Music — авторские треки, музыка и синхронизированные тексты песен. Послушать «Когда идёт дождь».">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Virotos Music — Когда идёт дождь">
+  <meta property="og:description" content="Авторская музыка Virotos: «Когда идёт дождь» и синхронизированный текст песни.">
+  <meta property="og:url" content="https://virotos.ru/music/">
+  <link rel="canonical" href="https://virotos.ru/music/">
+  <title>Virotos Music — Когда идёт дождь</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/music.css">
+  <link rel="stylesheet" href="../css/lyrics.css">
+  <link rel="stylesheet" href="../css/music-page.css">
+</head>
+<body class="music-route-page">
+<main class="container music-page-container">
+  <header>
+    <a class="logo music-logo" href="../" aria-label="На главную Virotos">VIROTOS <span>/</span> VIKTOR LIFE</a>
+    <span>✦ Личная страница</span>
+  </header>
+
+  <nav class="music-page-nav" aria-label="Навигация по сайту">
+    <a class="music-back" href="../"><span aria-hidden="true">←</span> На главную</a>
+    <button class="music-copy-link" id="copyMusicLink" type="button">
+      <span aria-hidden="true">↗</span> Скопировать ссылку
+    </button>
+  </nav>
+
+  <section class="music-route-hero" aria-labelledby="musicRouteTitle">
+    <div class="eyebrow">VIROTOS / MUSIC</div>
+    <h1 id="musicRouteTitle">Моя <span>музыка.</span></h1>
+    <p>Истории, которые проще спеть, чем рассказать. Слушай, читай строки и делись музыкой.</p>
+  </section>
+
+  <section class="music-page-panel" aria-label="Музыкальный плеер и субтитры">
+    <div id="musicContent"></div>
+  </section>
+
+  <footer>
+    <span>© <span id="year"></span> Virotos</span>
+    <span>Музыка живёт здесь ♫</span>
+  </footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script type="module" src="../js/music-page.js"></script>
+</body>
+</html>

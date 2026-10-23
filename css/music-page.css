@@ -1,0 +1,16 @@
+/* Страница /music/ — общий стиль сайта, отдельно от модальных окон. */
+.music-page-container { max-width: 880px; }
+.music-logo { text-decoration: none; }
+.music-page-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:8px 0 18px; }
+.music-back, .music-copy-link { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px; padding:10px 14px; color:#e8edff; background:#ffffff09; border:1px solid var(--line); border-radius:12px; text-decoration:none; cursor:pointer; font-size:13px; font-weight:600; transition:background .2s,border-color .2s; }
+.music-back:hover, .music-copy-link:hover { background:#9db5ff1b; border-color:#9db5ff60; }
+.music-back:focus-visible, .music-copy-link:focus-visible, .music-logo:focus-visible { outline:2px solid #becfff; outline-offset:3px; }
+.music-route-hero { text-align:center; padding:26px 18px 30px; animation:appear .5s ease both; }
+.music-route-hero h1 { margin:12px 0 10px; font-size:clamp(39px,7vw,62px); line-height:1.07; }
+.music-route-hero p { max-width:520px; margin:0 auto; line-height:1.75; color:var(--muted); font-size:14px; }
+.music-page-panel { max-width:635px; margin:0 auto 30px; padding:clamp(19px,4vw,35px); border:1px solid #bac6ff35; border-radius:25px; background:linear-gradient(150deg,#1d253b,#171b2d 52%,#17192a); box-shadow:0 22px 65px #0003; }
+.music-page-panel .music-player { max-width:475px; }
+.music-page-panel .music-art { height:clamp(200px,47vw,280px); }
+.music-page-panel .lyrics-stage { height:300px; }
+.music-page-panel .music-footnote { margin-bottom:0; }
+@media(max-width:480px) { .music-route-hero{padding:17px 8px 24px}.music-route-hero .eyebrow{font-size:10px;letter-spacing:2.5px}.music-page-nav{gap:7px}.music-back,.music-copy-link{padding:10px;font-size:12px}.music-page-panel{padding:16px;border-radius:19px}.music-page-panel .lyrics-stage{height:270px} }
