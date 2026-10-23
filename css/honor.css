@@ -1,0 +1,14 @@
+/* Доска почёта */
+.honor-intro { color: var(--muted); margin-bottom: 20px !important; }
+.honor-group { margin: 22px 0; }
+.honor-heading { display: flex; align-items: center; gap: 9px; margin: 0 0 12px; font-size: 16px; color: #f4f5ff; }
+.honor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.honor-person { min-width: 0; border: 1px solid var(--line); background: linear-gradient(140deg,#252c44,#1b2033); border-radius: 15px; padding: 14px; transition: transform .2s, border-color .2s; }
+.honor-person:hover { transform: translateY(-3px); border-color: #82aaff88; }
+.honor-person strong { display: block; color: #fff; font-size: 14px; line-height: 1.5; }
+.honor-person small { display: block; color: var(--muted); font-size: 12px; line-height: 1.6; margin-top: 5px; }
+.honor-person .honor-date { color: var(--blue); font-size: 12px; margin-top: 5px; display: block; }
+.honor-person.featured { border-color: #e4bf7766; background: linear-gradient(145deg,#35304a,#24273c); }
+.honor-note { text-align: center; color: var(--muted); font-size: 12px; font-style: italic; margin-top: 22px !important; }
+@media (max-width: 420px) { .honor-grid { grid-template-columns: 1fr; } }
+

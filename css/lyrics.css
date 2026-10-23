@@ -1,0 +1,15 @@
+/* Синхронизированный текст песни */
+.lyrics-wrap { margin-top: 22px; border: 1px solid #a5b9f032; border-radius: 16px; background: linear-gradient(160deg,#1b2740,#151c30 75%); text-align: left; overflow: hidden; }
+.lyrics-header { display:flex; justify-content:space-between; align-items:center; gap:10px; padding: 14px 16px 10px; }
+.lyrics-header strong { color:#e7efff; font-size:14px; letter-spacing:.1px; }
+.lyrics-toggle { border:1px solid #9aaee64d; background:#9baeff1d; color:#e1eaff; cursor:pointer; font:inherit; font-size:12px; border-radius:999px; padding:7px 11px; white-space:nowrap; }
+.lyrics-toggle:focus-visible,.lyric-line:focus-visible { outline:2px solid #c2d1ff; outline-offset:2px; }
+.lyrics-stage { overflow-y:auto; overscroll-behavior:contain; height:250px; scroll-behavior:smooth; scrollbar-width:thin; scrollbar-color:#586589 #20283a; padding:58px 18px 105px; mask-image:linear-gradient(transparent 0%,#000 16%,#000 78%,transparent 100%); }
+.lyrics-stage[hidden] { display:none; }
+.lyric-line { display:block; width:100%; border:0; cursor:pointer; padding:9px 5px; background:transparent; color:#8994b0; font:inherit; line-height:1.45; font-size:clamp(14px,3.9vw,17px); text-align:center; font-weight:650; border-radius:8px; transition:color .22s ease,opacity .22s ease,transform .22s ease; opacity:.57; }
+.lyric-line.past { color:#acbce1; opacity:.75; }
+.lyric-line.active { color:#f5f8ff; opacity:1; text-shadow:0 0 22px #a6c2ff8c; transform:scale(1.025); }
+.lyric-line:hover { color:#ffffff; opacity:1; }
+.lyrics-empty { color:#a7b5d1; text-align:center; font-size:13px; padding:48px 12px; }
+.lyrics-stage.collapsed { height:0; padding:0; }
+@media(prefers-reduced-motion:reduce){.lyrics-stage {scroll-behavior:auto}.lyric-line {transition:none;transform:none!important}}
