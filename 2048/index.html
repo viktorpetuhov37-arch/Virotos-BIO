@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e1019">
+  <meta name="description" content="VIROTOS 2048 — играй, набирай очки и попади в топ-3 игроков сайта.">
+  <meta property="og:title" content="VIROTOS 2048 — таблица рекордов">
+  <meta property="og:description" content="Собери 2048, обойди соперников и займи место в топ-3.">
+  <meta property="og:url" content="https://virotos.ru/2048/">
+  <link rel="canonical" href="https://virotos.ru/2048/">
+  <title>VIROTOS 2048 — игровой зал</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/game2048.css">
+</head>
+<body>
+  <main class="container game-page">
+    <header>
+      <a class="logo" href="../">VIROTOS <span>/</span> ARCADE</a>
+      <span>✦ Твоя игра, твой рекорд</span>
+    </header>
+    <nav class="game-nav" aria-label="Навигация">
+      <a href="../">← На главную</a>
+      <button id="shareButton" type="button">↗ Поделиться игрой</button>
+    </nav>
+
+    <section class="game-hero">
+      <div class="eyebrow">VIROTOS / ARCADE / 001</div>
+      <h1>2048<span>.</span></h1>
+      <p>Объединяй одинаковые числа, собирай очки и борись за место на пьедестале.</p>
+    </section>
+
+    <div class="game-columns">
+      <section class="game-panel" aria-labelledby="playHeading">
+        <div class="game-panel-heading">
+          <div>
+            <div class="small-caption">ИГРОВОЕ ПОЛЕ</div>
+            <h2 id="playHeading">Твоя партия</h2>
+          </div>
+          <div id="playerTag" class="player-tag">Игрок не выбран</div>
+        </div>
+
+        <div class="game-stats">
+          <div class="stat"><span>Счёт</span><strong id="score">0</strong></div>
+          <div class="stat"><span>Лучший на устройстве</span><strong id="best">0</strong></div>
+        </div>
+
+        <div class="game-board-wrap">
+          <div id="board" class="game-board" role="grid" aria-label="Игровое поле 4 на 4"></div>
+          <div id="startOverlay" class="game-overlay">
+            <form id="startForm" class="game-start-form" autocomplete="off">
+              <div class="overlay-symbol" aria-hidden="true">✦</div>
+              <h3>Начнём игру?</h3>
+              <p>Придумай ник — он появится в таблице рекордов, если наберёшь достаточно очков.</p>
+              <label for="nickname">Твой ник</label>
+              <input id="nickname" name="nickname" maxlength="18" minlength="2" required placeholder="Например, Virotos" spellcheck="false" autocomplete="nickname">
+              <button class="accent-button" id="startButton" type="submit">Начать игру →</button>
+              <small id="startError" role="alert"></small>
+            </form>
+          </div>
+        </div>
+        <div id="message" role="status" aria-live="polite" class="game-message">Управление: стрелки, WASD или свайпы по полю.</div>
+        <div class="game-actions">
+          <button id="finishButton" type="button" disabled>Сохранить результат</button>
+          <button id="restartButton" type="button" disabled>Новая игра</button>
+        </div>
+        <div class="game-dpad" aria-label="Кнопки управления на телефоне">
+          <div></div><button type="button" data-direction="U" aria-label="Вверх">↑</button><div></div>
+          <button type="button" data-direction="L" aria-label="Влево">←</button>
+          <button type="button" data-direction="D" aria-label="Вниз">↓</button>
+          <button type="button" data-direction="R" aria-label="Вправо">→</button>
+        </div>
+        <p class="game-footnote">Одинаковые числа складываются. Кнопка «Сохранить результат» завершает текущую партию. Отмена хода недоступна.</p>
+      </section>
+
+      <aside class="leaderboard-panel" aria-labelledby="leaderboardHeading">
+        <div class="small-caption">HALL OF FAME</div>
+        <div class="leaderboard-heading">
+          <h2 id="leaderboardHeading">Топ-3 игроков</h2>
+          <button id="refreshButton" type="button" aria-label="Обновить таблицу" title="Обновить таблицу">↻</button>
+        </div>
+        <p id="leaderboardStatus" class="leaderboard-status">Загрузка рекордов…</p>
+        <ol class="leaderboard" id="leaderboard" aria-live="polite"></ol>
+        <p class="leaderboard-explainer">Здесь лучшие результаты по никам. Рейтинг обновляется после сохранения партии.</p>
+        <div class="record-hint">🏆 <span>Всё начинается с первого рекорда.</span></div>
+      </aside>
+    </div>
+    <footer><span>© <span id="year"></span> Virotos</span><span>Аркада № 001 • игра 2048</span></footer>
+  </main>
+  <div id="notification" role="status" aria-live="polite" class="game-toast"></div>
+  <script type="module" src="../js/game2048.js"></script>
+</body>
+</html>
