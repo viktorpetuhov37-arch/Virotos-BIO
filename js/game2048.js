@@ -9,6 +9,7 @@ const directionKeys = { ArrowLeft:'L', ArrowRight:'R', ArrowUp:'U', ArrowDown:'D
 let game = null, nickname = '', sessionId = null, mode = 'local';
 let trace = '', ended = false, submitting = false, won = false;
 let noticeTimer;
+let ownerKey = ''; // только в памяти до сохранения партии — НЕ localStorage
 
 function storageRead() {
   try { const v = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); return Array.isArray(v) ? v : []; }
@@ -75,7 +76,11 @@ async function apiCall(path, method='GET', data=null) {
       ...(data ? { headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(data) } : {})
     });
     const payload=await response.json();
-    if (!response.ok || payload.error) throw Error(payload.error || 'Ошибка сервера '+response.status);
+    if (!response.ok || payload.error) {
+      const error = Error(payload.error || 'Ошибка сервера ' + response.status);
+      error.httpStatus = response.status;
+      throw error;
+    }
     return payload;
   } finally {clearTimeout(timer);}
 }
@@ -93,12 +98,29 @@ async function loadTop() {
   $('refreshButton').disabled=false;
 }
 function freshSeed() { const n=new Uint32Array(1); crypto.getRandomValues(n); return n[0]; }
+// Зарезервированное имя владельца Virotos. Убираем разделители и учитываем
+// кириллицу, латиницу, регистр и смешанные написания.
+function isReservedNickname(name) {
+  const compact = String(name).normalize('NFKC').toLocaleLowerCase('ru-RU')
+    .replace(/[\p{Cf}\s._-]+/gu, '');
+  const lookalikes = { 'в':'v', 'и':'i', 'і':'i', 'р':'r', 'о':'o', 'т':'t', 'с':'s' };
+  const folded = [...compact].map(letter => lookalikes[letter] || letter).join('');
+  return folded.includes('virotos');
+}
+
 function validateNickname(name) {
   const nick=name.replace(/\s+/gu,' ').trim();
   if (nick.length<2 || nick.length>18 || !/^[\p{L}\p{N}_. -]+$/u.test(nick)) {
     throw Error('Ник: 2–18 символов, буквы, цифры, пробел, точка, «_» или «-».');
   }
   return nick;
+}
+function updateOwnerField() {
+  const reserved = isReservedNickname($('nickname').value);
+  $('ownerCodeWrap').hidden = !reserved;
+  $('ownerCode').required = reserved;
+  $('startOverlay').classList.toggle('owner-mode', reserved);
+  if (!reserved) $('ownerCode').value = '';
 }
 async function start(event) {
   event.preventDefault();
@@ -107,20 +129,37 @@ async function start(event) {
   try { name=validateNickname($('nickname').value); }
   catch(error) { $('startError').textContent=error.message; return; }
   $('startButton').disabled=true; $('startButton').textContent='Запускаем…';
+  const reserved = isReservedNickname(name);
+  const candidateKey = reserved ? $('ownerCode').value : '';
+  if (reserved && !API) {
+    $('startError').textContent = 'Для защищённого ника нужен работающий сервер рекордов.';
+    $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
+    return;
+  }
   let seed=freshSeed(), remoteId=null;
   if (API) {
     try {
-      const data=await apiCall('/api/start', 'POST', {nickname:name});
+      const data=await apiCall('/api/start', 'POST', {nickname:name, ...(reserved ? {ownerKey:candidateKey} : {})});
       seed=data.seed >>> 0;
       remoteId=data.id;
       mode='global';
     } catch(error) {
+      // Защищённый ник нельзя использовать в офлайн-режиме.
+      // Ошибки 4xx также нельзя обходить локальной игрой.
+      if (reserved || (error.httpStatus >= 400 && error.httpStatus < 500)) {
+        $('startError').textContent=error.message || 'Не удалось проверить ник.';
+        $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
+        return;
+      }
       mode='local';
       notify('Сервер пока недоступен. Игра запущена без общего рейтинга.');
     }
   } else mode='local';
   game=createGame(seed);
-  nickname=name; sessionId=remoteId;
+  nickname=reserved ? 'Virotos' : name;
+  ownerKey=reserved ? candidateKey : '';
+  $('ownerCode').value = ''; // никогда не сохраняем код в браузере
+  sessionId=remoteId;
   trace=''; ended=false; submitting=false; won=false;
   try {localStorage.setItem(NICK_KEY,name);} catch {}
   $('playerTag').textContent=name;
@@ -154,9 +193,10 @@ async function finish() {
   let message='Результат сохранён на этом устройстве.';
   if (mode==='global' && sessionId) {
     try {
-      const response=await apiCall('/api/finish','POST',{id:sessionId,moves:trace});
+      const response=await apiCall('/api/finish','POST',{id:sessionId,moves:trace, ...(ownerKey ? {ownerKey} : {})});
       message=`Результат ${Number(response.score).toLocaleString('ru-RU')} добавлен в общий рейтинг!`;
       sessionId=null;
+      ownerKey='';
     } catch(error) {
       message='Не удалось отправить результат: '+error.message+'. Нажми «Повторить отправку».';
       $('finishButton').textContent='Повторить отправку';
@@ -172,7 +212,8 @@ async function finish() {
 function newGame() {
   if (game && ((sessionId && ended) || (!ended && trace.length>0)) && !confirm('Начать заново? Несохранённый общий результат может потеряться.')) return;
   ended=true;
-  game=null; trace=''; sessionId=null;
+  game=null; trace=''; sessionId=null; ownerKey='';
+  $('ownerCode').value='';
   $('startOverlay').hidden=false;
   $('startError').textContent='';
   $('finishButton').disabled=true; $('restartButton').disabled=true;
@@ -187,7 +228,9 @@ function init() {
   $('year').textContent=new Date().getFullYear();
   try { $('nickname').value=localStorage.getItem(NICK_KEY)||''; } catch {}
   $('best').textContent=localBest().toLocaleString('ru-RU');
+  $('nickname').addEventListener('input', updateOwnerField);
   $('startForm').addEventListener('submit', start);
+  updateOwnerField();
   $('finishButton').addEventListener('click', ()=>void finish());
   $('restartButton').addEventListener('click',newGame);
   $('refreshButton').addEventListener('click',()=>void loadTop());

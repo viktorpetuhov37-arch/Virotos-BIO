@@ -53,7 +53,12 @@
               <h3>Начнём игру?</h3>
               <p>Придумай ник — он появится в таблице рекордов, если наберёшь достаточно очков.</p>
               <label for="nickname">Твой ник</label>
-              <input id="nickname" name="nickname" maxlength="18" minlength="2" required placeholder="Например, Virotos" spellcheck="false" autocomplete="nickname">
+              <input id="nickname" name="nickname" maxlength="18" minlength="2" required placeholder="Например, Alex2048" spellcheck="false" autocomplete="nickname">
+              <div id="ownerCodeWrap" class="owner-code-wrap" hidden>
+                <label for="ownerCode">Код владельца Virotos</label>
+                <input id="ownerCode" type="password" minlength="24" maxlength="256" autocomplete="off" spellcheck="false" placeholder="Только для владельца ника">
+                <span class="owner-code-hint">Имя Virotos защищено от использования другими игроками.</span>
+              </div>
               <button class="accent-button" id="startButton" type="submit">Начать игру →</button>
               <small id="startError" role="alert"></small>
             </form>

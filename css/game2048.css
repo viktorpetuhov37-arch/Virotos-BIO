@@ -69,3 +69,16 @@ body { -webkit-tap-highlight-color: transparent; }
 .game-toast.show { opacity:1; }
 @media (max-width:760px) { .game-columns { grid-template-columns:1fr; } .leaderboard-panel { order:2; } .game-panel,.leaderboard-panel { padding:17px; } .game-board { gap:7px; padding:8px; } .tile { border-radius:7px; } .game-hero { padding:22px; } .game-panel-heading h2 { font-size:19px; } }
 @media (max-width:420px) { .game-board { gap:6px; } .game-start-form { gap:8px; } .game-overlay { padding:12px; } .tile { font-size:22px; } }
+
+/* Доступ владельца к защищённому нику. [hidden] важен, т.к. родитель flex. */
+.owner-code-wrap[hidden] { display:none; }
+.owner-code-wrap { display:flex; flex-direction:column; gap:7px; text-align:left; }
+.owner-code-hint { font-size:11px; line-height:1.35; color:#b7c9e6; }
+.game-overlay.owner-mode { overflow-y:auto; align-items:safe center; }
+.game-overlay.owner-mode .game-start-form { gap:7px; }
+.game-overlay.owner-mode .overlay-symbol { display:none; }
+.game-overlay.owner-mode .game-start-form p { font-size:12px; }
+@media (max-width:420px) {
+  .game-overlay.owner-mode { padding:8px; }
+  .game-overlay.owner-mode .game-start-form input { padding:9px 11px; }
+}
