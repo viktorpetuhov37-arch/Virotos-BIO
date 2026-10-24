@@ -46,24 +46,48 @@ function refreshBoard() {
   $('score').textContent = game.score.toLocaleString('ru-RU');
   $('best').textContent = Math.max(localBest(), game.score).toLocaleString('ru-RU');
 }
-function renderTop(rows, title) {
+// Админский статус присваивается ТОЛЬКО каноническому Virotos в общем
+// рейтинге, полученному от защищённого Worker. Локальным никам не доверяем.
+function renderTop(rows, title, fromServer = false) {
   $('leaderboardStatus').textContent = title;
   $('leaderboard').replaceChildren();
   if (!rows.length) {
     const li = document.createElement('li');
-    li.className='leaderboard-empty';
-    li.textContent='Пока ни одного результата. Стань первым!';
+    li.className = 'leaderboard-empty';
+    li.textContent = 'Пока ни одного результата. Стань первым!';
     $('leaderboard').append(li);
     return;
   }
-  const medals=['🥇','🥈','🥉'];
-  rows.slice(0,3).forEach((player, i) => {
-    const li=document.createElement('li');
-    const medal=document.createElement('span'), name=document.createElement('span'), points=document.createElement('span');
-    medal.className='leaderboard-medal'; medal.textContent=medals[i];
-    name.className='leaderboard-name'; name.textContent=player.nickname;
-    points.className='leaderboard-points'; points.textContent=Number(player.score).toLocaleString('ru-RU');
-    li.append(medal,name,points); $('leaderboard').append(li);
+  const medals = ['🥇', '🥈', '🥉'];
+  rows.slice(0, 3).forEach((player, i) => {
+    const isOwner = fromServer && player.nickname === 'Virotos';
+    const isGold = i === 0 && !isOwner; // админский стиль приоритетнее золота
+    const li = document.createElement('li');
+    const medal = document.createElement('span');
+    const name = document.createElement('span');
+    const nickname = document.createElement('span');
+    const points = document.createElement('span');
+    medal.className = 'leaderboard-medal';
+    medal.textContent = medals[i];
+    name.className = 'leaderboard-name';
+    nickname.className = 'leaderboard-nickname';
+    nickname.textContent = player.nickname; // без HTML — безопасно для любых ников
+    if (isOwner) {
+      li.classList.add('leaderboard-row--owner');
+      nickname.classList.add('leaderboard-nickname--owner');
+      const badge = document.createElement('span');
+      badge.className = 'leaderboard-owner-badge';
+      badge.textContent = '✦ OWNER';
+      badge.title = 'Владелец Virotos Arcade';
+      name.append(nickname, badge);
+    } else {
+      if (isGold) nickname.classList.add('leaderboard-nickname--gold');
+      name.append(nickname);
+    }
+    points.className = 'leaderboard-points';
+    points.textContent = Number(player.score).toLocaleString('ru-RU');
+    li.append(medal, name, points);
+    $('leaderboard').append(li);
   });
 }
 async function apiCall(path, method='GET', data=null) {
@@ -90,7 +114,7 @@ async function loadTop() {
   else {
     try {
       const data=await apiCall('/api/top');
-      renderTop(data.top || [], 'Общий топ-3 всех посетителей сайта');
+      renderTop(data.top || [], 'Общий топ-3 всех посетителей сайта', true);
     } catch {
       renderTop(localTop(), 'Сервер рекордов недоступен · показаны локальные результаты');
     }
@@ -162,7 +186,8 @@ async function start(event) {
   sessionId=remoteId;
   trace=''; ended=false; submitting=false; won=false;
   try {localStorage.setItem(NICK_KEY,name);} catch {}
-  $('playerTag').textContent=name;
+  $('playerTag').textContent=nickname;
+  $('playerTag').classList.toggle('player-tag--owner', reserved && mode==='global');
   $('startOverlay').hidden=true;
   $('finishButton').disabled=false;
   $('restartButton').disabled=false;
@@ -219,6 +244,7 @@ function newGame() {
   $('finishButton').disabled=true; $('restartButton').disabled=true;
   $('finishButton').textContent='Сохранить результат';
   $('playerTag').textContent='Игрок не выбран';
+  $('playerTag').classList.remove('player-tag--owner');
   $('score').textContent='0';
   showMessage('Введи ник и начни новую партию.');
   $('nickname').focus();
