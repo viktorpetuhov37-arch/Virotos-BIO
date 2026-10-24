@@ -37,3 +37,8 @@
 .events-panel .leaderboard{margin-top:15px}
 @media(max-width:800px){.events-layout{grid-template-columns:1fr}.events-panel,.events-admin{padding:18px}}
 @media(max-width:520px){.events-date-row{grid-template-columns:1fr}}
+
+.events-checkbox-label{display:flex!important;align-items:center;flex-direction:row!important;gap:9px;font-size:13px!important}
+.events-checkbox-label input{width:18px!important;height:18px;accent-color:#95b6ff}
+.tg-webhook-setup{border:1px solid #556d9a;border-radius:12px;padding:12px;color:#b8c9e6;font-size:12px}
+.tg-webhook-setup button{border:1px solid #83a9ff;border-radius:8px;background:#263e66;color:white;padding:10px;cursor:pointer}

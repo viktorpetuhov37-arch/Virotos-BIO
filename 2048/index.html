@@ -51,7 +51,7 @@
 
         <div class="game-stats">
           <div class="stat"><span>Счёт</span><strong id="score">0</strong></div>
-          <div class="stat"><span>Лучший на устройстве</span><strong id="best">0</strong></div>
+          <div class="stat"><span title="Только этот браузер. Не равно результату, сохранённому на сервере">Личный рекорд (на устройстве)</span><strong id="best">0</strong></div>
         </div>
 
         <div class="game-board-wrap">
@@ -61,7 +61,14 @@
               <div class="overlay-symbol" aria-hidden="true">✦</div>
               <h3>Начнём игру?</h3>
               <p>Придумай ник — он появится в таблице рекордов, если наберёшь достаточно очков.</p>
-              <label for="nickname">Твой ник</label>
+              <section id="telegramAuthPanel" class="tg-auth-panel" hidden>
+                <strong>🔐 Вход для турнира</strong>
+                <p>Результаты здесь привязаны к Telegram ID. Чужое имя использовать нельзя.</p>
+                <button id="tgLoginButton" type="button" class="tg-auth-button">Войти через Telegram</button>
+                <a id="tgOpenLink" target="_blank" rel="noopener noreferrer" hidden>Открыть бота в Telegram ↗</a>
+                <p id="tgStatus" role="status">Telegram ещё не подключён.</p>
+              </section>
+              <label for="nickname" id="nicknameLabel">Твой ник</label>
               <input id="nickname" name="nickname" maxlength="18" minlength="2" required placeholder="Например, Alex2048" spellcheck="false" autocomplete="nickname">
               <div id="ownerCodeWrap" class="owner-code-wrap" hidden>
                 <label for="ownerCode">Код владельца Virotos</label>
@@ -84,7 +91,7 @@
           <button type="button" data-direction="D" aria-label="Вниз">↓</button>
           <button type="button" data-direction="R" aria-label="Вправо">→</button>
         </div>
-        <p class="game-footnote">Одинаковые числа складываются. Кнопка «Сохранить результат» завершает текущую партию. Отмена хода недоступна.</p>
+        <p class="game-footnote"><strong>Важно:</strong> личный рекорд сохраняется в браузере, но в общий или турнирный зачёт очки попадают только после нажатия «Сохранить результат» и подтверждения от сервера. <span aria-hidden="true">·</span> Одинаковые числа складываются. Кнопка «Сохранить результат» завершает текущую партию. Отмена хода недоступна.</p>
       </section>
 
       <aside class="leaderboard-panel" aria-labelledby="leaderboardHeading">

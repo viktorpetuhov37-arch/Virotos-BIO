@@ -167,3 +167,12 @@ body { -webkit-tap-highlight-color: transparent; }
 .tournament-play-note span{display:block;color:#b8c7e6;font-size:12px;margin-top:5px}
 .tournament-countdown{font-size:18px;font-weight:850;color:#ffda85;font-variant-numeric:tabular-nums}
 .tournament-play-note a{color:#bfd1ff;font-size:12px}
+
+/* Telegram identity panel for verified tournaments */
+.tg-auth-panel{display:grid;gap:9px;margin:12px 0;padding:15px;border:1px solid #69a4ff80;border-radius:14px;background:#1d2c46;color:#edf3ff}
+.tg-auth-panel[hidden],.tg-auth-panel [hidden]{display:none!important}
+.tg-auth-panel p{margin:0;color:#bfceec;font-size:12px;line-height:1.55}
+.tg-auth-panel strong{font-size:14px;color:#f1f5ff}
+.tg-auth-button{border:1px solid #65b5ff70;border-radius:11px;background:#286497;color:#fff;padding:12px;cursor:pointer;font-weight:800}
+.tg-auth-button:disabled{opacity:.6;cursor:progress}
+.tg-auth-panel a{color:#a5d1ff;font-size:13px}

@@ -42,9 +42,13 @@
         <label>Описание <textarea id="newDescription" maxlength="300" rows="2" placeholder="Собери больше всех очков за три дня"></textarea></label>
         <label>Приз <input id="newPrize" maxlength="150" placeholder="Сюрприз от Virotos 💙" /></label>
         <div class="events-date-row"><label>Начало <input id="newStart" type="datetime-local" required /></label><label>Окончание <input id="newEnd" type="datetime-local" required /></label></div>
+        <label class="events-checkbox-label"><input id="newRequiresTelegram" type="checkbox" checked> 🔐 Проверять Telegram-аккаунты участников (только для новых турниров)</label>
         <label>Код администратора <input id="adminKey" type="password" required minlength="24" autocomplete="off" placeholder="VIROTOS_TOURNAMENT_ADMIN_KEY" /></label>
         <div class="events-admin-actions"><button type="submit" id="createButton" class="events-cta">Создать турнир</button><button type="button" id="closeEvent" disabled>Завершить выбранный турнир досрочно</button></div>
         <p id="adminMessage" role="status" class="events-status"></p>
+        <div class="tg-webhook-setup"><p>Первый раз подключаешь Telegram-бота? Добавь секреты в Worker, затем нажми кнопку:</p>
+          <button id="configureTelegramBot" type="button">🔗 Подключить бота к Worker</button>
+          <p id="telegramWebhookStatus" role="status" class="events-status"></p></div>
       </form>
     </div>
   </section>

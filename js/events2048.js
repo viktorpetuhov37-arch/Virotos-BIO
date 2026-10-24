@@ -26,6 +26,7 @@ function showCard(t){
   const info=tag('div','', 'event-info');info.append(tag('span','Начало: '+formatDate(t.startsAt)),tag('span','Конец: '+formatDate(t.endsAt)));
   btn.append(info);
   if(t.prize)btn.append(tag('p','🎁 '+t.prize));
+  btn.append(tag('p',t.requiresTelegram?'🔐 Участие с подтверждением Telegram':'🎮 Участие по игровому нику'));
   btn.append(tag('span',statusText(t),'event-card-clock'));
   btn.addEventListener('click',()=>void selectEvent(t.id));
   return btn;
@@ -58,6 +59,7 @@ function paintSelected(t){
   $('selectedEventMeta').append(tag('p','Старт: '+formatDate(t.startsAt)),tag('p','Дедлайн: '+formatDate(t.endsAt)));
   if(t.prize)$('selectedEventMeta').append(tag('p','🎁 Приз: '+t.prize));
   if(t.description)$('selectedEventMeta').append(tag('p',t.description));
+  $('selectedEventMeta').append(tag('p',t.requiresTelegram?'🔐 Защищённый турнир: каждый результат привязан к Telegram ID.':'Рейтинг по игровым никам без подтверждения аккаунта.'));
   const link=$('playEvent');link.hidden=status!=='active';link.href='../?tournament='+encodeURIComponent(t.id);
   $('shareEvent').disabled=false;
   $('closeEvent').disabled=status==='finished';
@@ -91,7 +93,7 @@ async function createEvent(e){
   const key=$('adminKey').value;$('createButton').disabled=true;
   try{
     if(!Number.isFinite(start)||!Number.isFinite(end))throw Error('Укажи начало и конец');
-    const data=await call('/api/admin/tournaments','POST',{title:$('newTitle').value,description:$('newDescription').value,prize:$('newPrize').value,startsAt:start,endsAt:end,adminKey:key});
+    const data=await call('/api/admin/tournaments','POST',{title:$('newTitle').value,description:$('newDescription').value,prize:$('newPrize').value,startsAt:start,endsAt:end,requiresTelegram:$('newRequiresTelegram').checked,adminKey:key});
     $('adminKey').value='';$('adminMessage').textContent='Турнир создан! Отправь участникам ссылку.';selectedId=data.tournament.id;await refresh();
   }catch(err){$('adminMessage').textContent='Ошибка: '+err.message;}
   finally{$('createButton').disabled=false;}
@@ -116,6 +118,14 @@ function init(){
   $('newStart').value=localField(now);$('newEnd').value=localField(end);
   $('createTournament').addEventListener('submit',e=>void createEvent(e));
   $('closeEvent').addEventListener('click',()=>void closeEvent());
+  $('configureTelegramBot').addEventListener('click',async()=>{
+    const adminKey=$('adminKey').value;
+    if(!adminKey){$('telegramWebhookStatus').textContent='Сначала введи код администратора.';return;}
+    $('configureTelegramBot').disabled=true;
+    try{await call('/api/admin/telegram/webhook','POST',{adminKey});$('telegramWebhookStatus').textContent='✅ Telegram-бот привязан к серверу.';}
+    catch(e){$('telegramWebhookStatus').textContent='Ошибка: '+e.message;}
+    finally{$('configureTelegramBot').disabled=false;}
+  });
   $('shareEvent').addEventListener('click',async()=>{
     if(!selectedId)return;
     const url=`https://virotos.ru/2048/events/?id=${encodeURIComponent(selectedId)}`;
