@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0e1019"><title>VIROTOS ARCADE — турниры 2048</title>
+  <meta name="description" content="Турниры, события, призы и победители Virotos Arcade.">
+  <link rel="canonical" href="https://virotos.ru/2048/events/">
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/game2048.css">
+  <link rel="stylesheet" href="../../css/events2048.css">
+</head>
+<body>
+<main class="container game-page">
+  <header><a class="logo" href="../../">VIROTOS <span>/</span> ARCADE</a><span>✦ События и рекорды</span></header>
+  <nav class="game-nav"><a href="../../">← Главная</a><a href="../">Открыть 2048</a></nav>
+  <div class="arcade-modes"><a class="arcade-mode" href="../">🎮 Свободная игра</a><a class="arcade-mode arcade-mode--active" href="./">🏆 Турниры и события</a></div>
+  <section class="game-hero">
+    <div class="eyebrow">VIROTOS / ARCADE / EVENTS</div><h1 class="events-title">Турниры<span>.</span></h1>
+    <p>Соревнуйся за первое место. У каждого турнира свой рейтинг, приз и дедлайн.</p>
+  </section>
+  <div class="events-layout">
+    <section class="events-panel" aria-labelledby="eventsHeading">
+      <div class="events-bar"><div><div class="small-caption">EVENTS</div><h2 id="eventsHeading">События</h2></div><button id="refreshEvents" type="button">↻ Обновить</button></div>
+      <p id="eventsStatus" role="status">Загружаем турниры…</p>
+      <div id="eventsList" class="events-list"></div>
+    </section>
+    <aside class="events-panel" aria-labelledby="eventRankingHeading">
+      <div class="small-caption">TOURNAMENT HALL OF FAME</div><h2 id="eventRankingHeading">Итоги и лидеры</h2>
+      <p id="selectedEventStatus" class="events-muted">Выбери турнир, чтобы посмотреть рейтинг.</p>
+      <div class="selected-event-meta" id="selectedEventMeta"></div>
+      <ol class="leaderboard" id="tournamentLeaderboard" aria-live="polite"></ol>
+      <div class="events-detail-actions"><a id="playEvent" class="events-cta" hidden href="../">Участвовать →</a><button type="button" id="shareEvent" disabled>Скопировать ссылку</button></div>
+      <p class="events-disclaimer">Результат должен быть отправлен на сервер до конца таймера. После окончания топ-3 не меняется.</p>
+    </aside>
+  </div>
+  <section class="events-admin" id="adminPanel">
+    <button type="button" id="toggleAdmin" class="events-admin-toggle" aria-expanded="false">✦ Управление турнирами (владелец)</button>
+    <div id="adminContent" hidden>
+      <p class="events-muted">Только владелец может создавать и досрочно завершать события. Код хранится в секрете Cloudflare и не сохраняется в браузере.</p>
+      <form id="createTournament" class="events-form" autocomplete="off">
+        <label>Название события <input id="newTitle" maxlength="70" required placeholder="Первый турнир VIROTOS" /></label>
+        <label>Описание <textarea id="newDescription" maxlength="300" rows="2" placeholder="Собери больше всех очков за три дня"></textarea></label>
+        <label>Приз <input id="newPrize" maxlength="150" placeholder="Сюрприз от Virotos 💙" /></label>
+        <div class="events-date-row"><label>Начало <input id="newStart" type="datetime-local" required /></label><label>Окончание <input id="newEnd" type="datetime-local" required /></label></div>
+        <label>Код администратора <input id="adminKey" type="password" required minlength="24" autocomplete="off" placeholder="VIROTOS_TOURNAMENT_ADMIN_KEY" /></label>
+        <div class="events-admin-actions"><button type="submit" id="createButton" class="events-cta">Создать турнир</button><button type="button" id="closeEvent" disabled>Завершить выбранный турнир досрочно</button></div>
+        <p id="adminMessage" role="status" class="events-status"></p>
+      </form>
+    </div>
+  </section>
+  <footer><span>© <span id="year"></span> Virotos</span><span>VIROTOS Arcade / турниры</span></footer>
+</main>
+<script type="module" src="../../js/events2048.js"></script>
+</body>
+</html>

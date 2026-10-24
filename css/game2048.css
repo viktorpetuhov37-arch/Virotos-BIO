@@ -155,3 +155,15 @@ body { -webkit-tap-highlight-color: transparent; }
   .leaderboard li { gap: 7px; padding: 12px 9px; }
   .leaderboard-owner-badge { font-size: 8px; letter-spacing: .4px; }
 }
+
+/* Два режима 2048. */
+.arcade-modes{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.arcade-mode{display:inline-flex;justify-content:center;align-items:center;min-height:44px;flex:1 1 190px;padding:12px 16px;border:1px solid #9aabf54d;border-radius:14px;background:#1d263c;color:#d9e4ff;text-decoration:none;font-weight:800;transition:background .2s}
+.arcade-mode:hover{background:#293a62}
+.arcade-mode--active{background:linear-gradient(100deg,#344e8b,#463673);border-color:#aac0ffbd;color:white}
+.tournament-play-note{padding:16px 18px;margin-bottom:16px;border-radius:16px;border:1px solid #ad97f36b;background:linear-gradient(100deg,#292c51,#262037);display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.tournament-play-note[hidden]{display:none}
+.tournament-play-note strong{display:block;font-size:18px}
+.tournament-play-note span{display:block;color:#b8c7e6;font-size:12px;margin-top:5px}
+.tournament-countdown{font-size:18px;font-weight:850;color:#ffda85;font-variant-numeric:tabular-nums}
+.tournament-play-note a{color:#bfd1ff;font-size:12px}

@@ -24,10 +24,19 @@
       <button id="shareButton" type="button">↗ Поделиться игрой</button>
     </nav>
 
+    <div class="arcade-modes" aria-label="Режимы 2048">
+      <a id="freeTab" class="arcade-mode arcade-mode--active" href="/2048/">🎮 Свободная игра</a>
+      <a id="eventsTab" class="arcade-mode" href="/2048/events/">🏆 Турниры и события</a>
+    </div>
+    <section id="eventPlayNotice" class="tournament-play-note" hidden aria-live="polite">
+      <div><strong id="eventPlayTitle">Турнир</strong><span id="eventPlayStatus">Загрузка…</span></div>
+      <div id="eventPlayCountdown" class="tournament-countdown">—</div>
+      <a href="/2048/events/">Правила и все турниры →</a>
+    </section>
     <section class="game-hero">
       <div class="eyebrow">VIROTOS / ARCADE / 001</div>
       <h1>2048<span>.</span></h1>
-      <p>Объединяй одинаковые числа, собирай очки и борись за место на пьедестале.</p>
+      <p id="heroSubtitle">Объединяй одинаковые числа, собирай очки и борись за место на пьедестале.</p>
     </section>
 
     <div class="game-columns">

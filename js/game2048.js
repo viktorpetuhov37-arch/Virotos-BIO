@@ -5,6 +5,48 @@ const $ = id => document.getElementById(id);
 const STORAGE_KEY = 'virotos2048_bests_v1';
 const NICK_KEY = 'virotos2048_nickname_v1';
 const API = API_BASE.trim().replace(/\/+$/, '');
+// Турнир выбирается прямой ссылкой /2048/?tournament=<id>.
+const tournamentId = new URLSearchParams(location.search).get('tournament');
+const validTournamentId = tournamentId && /^[0-9a-f-]{36}$/.test(tournamentId);
+let tournamentInfo=null,serverOffset=0,tournamentClock=null;
+const tournamentRoute=(action='')=>`/api/tournaments/${encodeURIComponent(tournamentId)}${action ? '/'+action : ''}`;
+function timeLeft(ms) {
+  if(ms<=0) return '00:00:00';
+  const s=Math.ceil(ms/1000), d=Math.floor(s/86400), h=Math.floor((s%86400)/3600);
+  return `${d?d+' дн. ':''}${String(h).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+function updateTournamentCountdown() {
+  if(!tournamentInfo) return;
+  const now=Date.now()+serverOffset;
+  const upcoming=now<tournamentInfo.startsAt;
+  const finished=tournamentInfo.closedAt!==null || now>=tournamentInfo.endsAt;
+  const countdown=$('eventPlayCountdown');
+  countdown.textContent=finished?'Результаты зафиксированы':timeLeft((upcoming?tournamentInfo.startsAt:tournamentInfo.endsAt)-now);
+  $('eventPlayStatus').textContent=finished?'Завершён · рекорды заморожены':upcoming?'Скоро начало':'Идёт сейчас · успей сохранить результат';
+  if(!game) $('startButton').disabled=!!finished || !!upcoming;
+  if(finished&&!game) $('startError').textContent='Турнир завершён. Новые партии не принимаются.';
+}
+async function setupTournament() {
+  if(!tournamentId) return;
+  $('eventPlayNotice').hidden=false;
+  $('eventsTab').classList.add('arcade-mode--active');
+  $('freeTab').classList.remove('arcade-mode--active');
+  $('leaderboardHeading').textContent='Топ-3 турнира';
+  $('heroSubtitle').textContent='Турнирный режим: баллы учитываются только до дедлайна.';
+  $('startButton').disabled=true;
+  if(!validTournamentId || !API) { $('startError').textContent='Неверная ссылка или сервер не подключён'; return; }
+  try {
+    const response=await apiCall(tournamentRoute());
+    tournamentInfo=response.tournament;
+    serverOffset=response.serverNow-Date.now();
+    $('eventPlayTitle').textContent=tournamentInfo.title;
+    updateTournamentCountdown();
+    tournamentClock=setInterval(updateTournamentCountdown,1000);
+  } catch(error) {
+    $('startError').textContent='Не удалось загрузить турнир: '+error.message;
+  }
+}
+
 const directionKeys = { ArrowLeft:'L', ArrowRight:'R', ArrowUp:'U', ArrowDown:'D', a:'L', d:'R', w:'U', s:'D', A:'L', D:'R', W:'U', S:'D', 'ф':'L', 'в':'R', 'ц':'U', 'ы':'D' };
 let game = null, nickname = '', sessionId = null, mode = 'local';
 let trace = '', ended = false, submitting = false, won = false;
@@ -110,13 +152,19 @@ async function apiCall(path, method='GET', data=null) {
 }
 async function loadTop() {
   $('refreshButton').disabled=true;
-  if (!API) renderTop(localTop(), 'Рекорды этого устройства · общий топ ещё не подключён');
+  if (tournamentId && !API) renderTop([], 'Для турнира нужен доступ к серверу.');
+  else if (!API) renderTop(localTop(), 'Рекорды этого устройства · общий топ ещё не подключён');
   else {
     try {
-      const data=await apiCall('/api/top');
-      renderTop(data.top || [], 'Общий топ-3 всех посетителей сайта', true);
+      const data=await apiCall(tournamentId?tournamentRoute('top'):'/api/top');
+      if(tournamentId) {
+        tournamentInfo=data.tournament;
+        serverOffset=data.serverNow-Date.now();
+        updateTournamentCountdown();
+      }
+      renderTop(data.top || [],tournamentId?(data.frozen?'Итоги турнира · рейтинг заморожен':'Турнирный зачёт · только текущий турнир'):'Общий топ-3 всех посетителей сайта',true);
     } catch {
-      renderTop(localTop(), 'Сервер рекордов недоступен · показаны локальные результаты');
+      renderTop([], tournamentId?'Не удалось получить турнирные результаты':'Общий рейтинг временно недоступен');
     }
   }
   $('refreshButton').disabled=false;
@@ -155,6 +203,11 @@ async function start(event) {
   $('startButton').disabled=true; $('startButton').textContent='Запускаем…';
   const reserved = isReservedNickname(name);
   const candidateKey = reserved ? $('ownerCode').value : '';
+  if (tournamentId && (!validTournamentId || !tournamentInfo || tournamentInfo.closedAt!==null || Date.now()+serverOffset<tournamentInfo.startsAt || Date.now()+serverOffset>=tournamentInfo.endsAt)) {
+    $('startError').textContent='Сейчас нельзя начать партию в этом турнире.';
+    $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
+    return;
+  }
   if (reserved && !API) {
     $('startError').textContent = 'Для защищённого ника нужен работающий сервер рекордов.';
     $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
@@ -163,14 +216,14 @@ async function start(event) {
   let seed=freshSeed(), remoteId=null;
   if (API) {
     try {
-      const data=await apiCall('/api/start', 'POST', {nickname:name, ...(reserved ? {ownerKey:candidateKey} : {})});
+      const data=await apiCall(tournamentId?tournamentRoute('start'):'/api/start', 'POST', {nickname:name, ...(reserved ? {ownerKey:candidateKey} : {})});
       seed=data.seed >>> 0;
       remoteId=data.id;
-      mode='global';
+      mode=tournamentId?'tournament':'global';
     } catch(error) {
       // Защищённый ник нельзя использовать в офлайн-режиме.
       // Ошибки 4xx также нельзя обходить локальной игрой.
-      if (reserved || (error.httpStatus >= 400 && error.httpStatus < 500)) {
+      if (tournamentId || reserved || (error.httpStatus >= 400 && error.httpStatus < 500)) {
         $('startError').textContent=error.message || 'Не удалось проверить ник.';
         $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
         return;
@@ -187,13 +240,13 @@ async function start(event) {
   trace=''; ended=false; submitting=false; won=false;
   try {localStorage.setItem(NICK_KEY,name);} catch {}
   $('playerTag').textContent=nickname;
-  $('playerTag').classList.toggle('player-tag--owner', reserved && mode==='global');
+  $('playerTag').classList.toggle('player-tag--owner', reserved && (mode==='global'||mode==='tournament'));
   $('startOverlay').hidden=true;
   $('finishButton').disabled=false;
   $('restartButton').disabled=false;
   $('finishButton').textContent='Сохранить результат';
   $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
-  showMessage(mode==='global'?'Готово! Поехали за рекордом.':'Локальная партия. Для общего топа подключим Cloudflare.');
+  showMessage(mode==='tournament'?'Турнир начат. Результат нужно сохранить до окончания таймера!':mode==='global'?'Готово! Поехали за рекордом.':'Локальная партия. Для общего топа подключим Cloudflare.');
   refreshBoard();
 }
 function move(direction) {
@@ -214,18 +267,23 @@ async function finish() {
   submitting=true; ended=true;
   $('finishButton').disabled=true;
   $('finishButton').textContent='Сохраняем…';
-  storeLocal(nickname,game.score);
+  if(!tournamentId) storeLocal(nickname,game.score);
   let message='Результат сохранён на этом устройстве.';
-  if (mode==='global' && sessionId) {
+  if ((mode==='global'||mode==='tournament') && sessionId) {
     try {
-      const response=await apiCall('/api/finish','POST',{id:sessionId,moves:trace, ...(ownerKey ? {ownerKey} : {})});
-      message=`Результат ${Number(response.score).toLocaleString('ru-RU')} добавлен в общий рейтинг!`;
+      const response=await apiCall(mode==='tournament'?tournamentRoute('finish'):'/api/finish','POST',{id:sessionId,moves:trace, ...(ownerKey ? {ownerKey} : {})});
+      message=`Результат ${Number(response.score).toLocaleString('ru-RU')} сохранён в ${mode==='tournament'?'турнирном':'общем'} рейтинге!`;
       sessionId=null;
       ownerKey='';
     } catch(error) {
-      message='Не удалось отправить результат: '+error.message+'. Нажми «Повторить отправку».';
-      $('finishButton').textContent='Повторить отправку';
-      $('finishButton').disabled=false;
+      if(mode==='tournament' && [409,410].includes(error.httpStatus)) {
+        message='Турнир завершён. Новые результаты больше не принимаются. Уже сохранённые очки остаются в рейтинге.';
+        sessionId=null;ownerKey='';
+      } else {
+        message='Не удалось отправить результат: '+error.message+'. Нажми «Повторить отправку».';
+        $('finishButton').textContent='Повторить отправку';
+        $('finishButton').disabled=false;
+      }
     }
   }
   if (mode==='local') sessionId=null;
@@ -280,5 +338,6 @@ function init() {
     catch {notify('Адрес игры: virotos.ru/2048/');}
   });
   void loadTop();
+  void setupTournament();
 }
 init();
