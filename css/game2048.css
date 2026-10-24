@@ -82,3 +82,76 @@ body { -webkit-tap-highlight-color: transparent; }
   .game-overlay.owner-mode { padding:8px; }
   .game-overlay.owner-mode .game-start-form input { padding:9px 11px; }
 }
+
+
+/* VIROTOS ARCADE — звания в глобальном топе. Owner всегда главнее золота. */
+.leaderboard-name {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 5px 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.leaderboard-nickname { overflow-wrap: anywhere; }
+
+/* Лидер рейтинга (если это не владелец): золотой ник. */
+.leaderboard-nickname--gold {
+  color: #ffd66f;
+  background: linear-gradient(105deg,#fff0b6 0%,#ffd15a 28%,#bd7b23 56%,#fff1ba 80%,#ffd15a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+  filter: drop-shadow(0 1px 6px #efbf5a55);
+}
+
+/* Защищённый ник владельца: красно-малиновое сияние + мягкое переливание. */
+.leaderboard-nickname--owner {
+  color: #ff709f; /* запасной цвет без поддержки градиентного текста */
+  background: linear-gradient(105deg,#ff506c 0%,#ffabce 25%,#c18dff 48%,#ff3c76 70%,#ff506c 100%);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 950;
+  letter-spacing: .2px;
+  filter: drop-shadow(0 0 7px #ff398377);
+  animation: virotos-owner-shimmer 4s linear infinite;
+}
+.leaderboard-owner-badge {
+  flex: none;
+  font-size: 9px;
+  line-height: 1.6;
+  letter-spacing: 1px;
+  padding: 1px 6px;
+  border: 1px solid #ff659a7a;
+  border-radius: 999px;
+  color: #ffc3dc;
+  background: #90234b4d;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.leaderboard li.leaderboard-row--owner {
+  border-color: #fa648eaa;
+  background: linear-gradient(110deg,#40243a,#28283e 75%);
+  box-shadow: inset 0 0 0 1px #ff57831a, 0 0 14px #ee4a7515;
+}
+.player-tag.player-tag--owner {
+  color: #ffd3e6;
+  background: linear-gradient(120deg,#7e234655,#4b315f77);
+  border-color: #ff709a9a;
+  box-shadow: 0 0 12px #ed44732a;
+  font-weight: 900;
+}
+@keyframes virotos-owner-shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 250% center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard-nickname--owner { animation: none; }
+}
+@media (max-width: 420px) {
+  .leaderboard li { gap: 7px; padding: 12px 9px; }
+  .leaderboard-owner-badge { font-size: 8px; letter-spacing: .4px; }
+}
