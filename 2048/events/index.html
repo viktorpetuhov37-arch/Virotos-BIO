@@ -7,7 +7,7 @@
   <link rel="canonical" href="https://virotos.ru/2048/events/">
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/game2048.css">
-  <link rel="stylesheet" href="../../css/events2048.css">
+  <link rel="stylesheet" href="../../css/events2048.css?v=history1">
 </head>
 <body>
 <main class="container game-page">
@@ -18,9 +18,13 @@
     <div class="eyebrow">VIROTOS / ARCADE / EVENTS</div><h1 class="events-title">Турниры<span>.</span></h1>
     <p>Соревнуйся за первое место. У каждого турнира свой рейтинг, приз и дедлайн.</p>
   </section>
+  <div class="events-view-tabs" role="group" aria-label="Разделы турниров">
+    <button id="viewCurrent" type="button" class="events-view-tab events-view-tab--active" aria-pressed="true">⚡ Текущие <span id="currentCount" class="events-view-count">0</span></button>
+    <button id="viewHistory" type="button" class="events-view-tab" aria-pressed="false">🏅 История турниров <span id="historyCount" class="events-view-count">0</span></button>
+  </div>
   <div class="events-layout">
     <section class="events-panel" aria-labelledby="eventsHeading">
-      <div class="events-bar"><div><div class="small-caption">EVENTS</div><h2 id="eventsHeading">События</h2></div><button id="refreshEvents" type="button">↻ Обновить</button></div>
+      <div class="events-bar"><div><div class="small-caption" id="eventsEyebrow">LIVE / UPCOMING</div><h2 id="eventsHeading">Текущие события</h2></div><button id="refreshEvents" type="button">↻ Обновить</button></div>
       <p id="eventsStatus" role="status">Загружаем турниры…</p>
       <div id="eventsList" class="events-list"></div>
     </section>
@@ -54,6 +58,6 @@
   </section>
   <footer><span>© <span id="year"></span> Virotos</span><span>VIROTOS Arcade / турниры</span></footer>
 </main>
-<script type="module" src="../../js/events2048.js"></script>
+<script type="module" src="../../js/events2048.js?v=history1"></script>
 </body>
 </html>
