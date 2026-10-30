@@ -69,7 +69,6 @@ export const music = {
           </div>
           <div class="lyrics-stage" id="lyricsStage" aria-label="Субтитры песни"></div>
         </section>
-        <p class="lyrics-note" id="lyricsNote" hidden>Таймкоды пока ориентировочные — их можно настроить в редакторе.</p>
         <p class="music-error" id="musicError" role="alert" hidden>Не удалось загрузить аудио. Проверь файл и подключение.</p>
       </div>
     </div>

@@ -88,9 +88,8 @@
             </form>
           </div>
         </div>
-        <div id="message" role="status" aria-live="polite" class="game-message">Управление: свайпами по полю или клавишами. На телефоне включи «Режим игры».</div>
+        <div id="message" role="status" aria-live="polite" class="game-message">Свайп / WASD / стрелки · рекорд сохраняется сам.</div>
         <div class="game-actions">
-          <button id="finishButton" type="button" disabled>Сохранить результат</button>
           <button id="restartButton" type="button" disabled>Новая игра</button>
         </div>
         <div class="game-dpad" aria-label="Кнопки управления на телефоне">
@@ -99,8 +98,6 @@
           <button type="button" data-direction="D" aria-label="Вниз">↓</button>
           <button type="button" data-direction="R" aria-label="Вправо">→</button>
         </div>
-        <p class="game-mobile-hint">📱 В режиме игры страница не прокручивается. Свайпай прямо по плиткам. Кнопка «Выйти» вернёт страницу без сброса партии.</p>
-        <p class="game-footnote"><strong>Важно:</strong> личный рекорд сохраняется в браузере, но в общий или турнирный зачёт очки попадают только после нажатия «Сохранить результат» и подтверждения от сервера. <span aria-hidden="true">·</span> Одинаковые числа складываются. Кнопка «Сохранить результат» завершает текущую партию. Отмена хода недоступна.</p>
       </section>
 
       <aside class="leaderboard-panel" aria-labelledby="leaderboardHeading">
@@ -111,7 +108,7 @@
         </div>
         <p id="leaderboardStatus" class="leaderboard-status">Загрузка рекордов…</p>
         <ol class="leaderboard" id="leaderboard" aria-live="polite"></ol>
-        <p class="leaderboard-explainer">Здесь лучшие результаты по никам. Рейтинг обновляется после сохранения партии.</p>
+        <p class="leaderboard-explainer">Здесь лучшие результаты по никам. Рекорды обновляются автоматически.</p>
         <div class="record-hint">🏆 <span>Всё начинается с первого рекорда.</span></div>
       </aside>
     </div>
@@ -119,6 +116,6 @@
   </main>
   <div id="notification" role="status" aria-live="polite" class="game-toast"></div>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="../js/game2048.js?v=mobile1"></script>
+  <script type="module" src="../js/game2048.js?v=autosave-1"></script>
 </body>
 </html>

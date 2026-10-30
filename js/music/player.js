@@ -69,7 +69,7 @@ export function initMusicPlayer(initialTrack = tracks[0]) {
     toggle.hidden = !next.lyrics;
     toggle.textContent = "Скрыть текст";
     toggle.setAttribute("aria-expanded", "true");
-    note.hidden = !next.lyricsDraft;
+    if (note) note.hidden = !next.lyricsDraft;
     controller.showUnavailable(next.lyrics ? "Загружаем текст песни…" : "Текст для этого демо пока не добавлен.");
     if (next.lyrics) {
       lyricsRequest = new AbortController();

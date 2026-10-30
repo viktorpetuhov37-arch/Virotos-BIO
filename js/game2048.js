@@ -26,7 +26,7 @@ function updateTournamentCountdown() {
   const finished=tournamentInfo.closedAt!==null || now>=tournamentInfo.endsAt;
   const countdown=$('eventPlayCountdown');
   countdown.textContent=finished?'Результаты зафиксированы':timeLeft((upcoming?tournamentInfo.startsAt:tournamentInfo.endsAt)-now);
-  $('eventPlayStatus').textContent=finished?'Завершён · рекорды заморожены':upcoming?'Скоро начало':'Идёт сейчас · успей сохранить результат';
+  $('eventPlayStatus').textContent=finished?'Завершён · рекорды заморожены':upcoming?'Скоро начало':'Идёт сейчас · рекорд сохраняется автоматически';
   if(!game) $('startButton').disabled=!!finished || !!upcoming;
   if(finished&&!game) $('startError').textContent='Турнир завершён. Новые партии не принимаются.';
 }
@@ -36,7 +36,7 @@ async function setupTournament() {
   $('eventsTab').classList.add('arcade-mode--active');
   $('freeTab').classList.remove('arcade-mode--active');
   $('leaderboardHeading').textContent='Топ-10 турнира';
-  $('heroSubtitle').textContent='Турнирный режим: баллы учитываются только до дедлайна.';
+  $('heroSubtitle').textContent='Турнирный режим · очки сохраняются автоматически до дедлайна.';
   $('startButton').disabled=true;
   if(!validTournamentId || !API) { $('startError').textContent='Неверная ссылка или сервер не подключён'; return; }
   try {
@@ -64,6 +64,9 @@ async function setupTournament() {
 const directionKeys = { ArrowLeft:'L', ArrowRight:'R', ArrowUp:'U', ArrowDown:'D', a:'L', d:'R', w:'U', s:'D', A:'L', D:'R', W:'U', S:'D', 'ф':'L', 'в':'R', 'ц':'U', 'ы':'D' };
 let game = null, nickname = '', sessionId = null, mode = 'local';
 let trace = '', ended = false, submitting = false, won = false;
+let checkpointTimer = null, checkpointRetryTimer = null, checkpointPromise = null;
+let finalizePromise = null, lastSavedScore = 0, lastSavedTrace = '';
+let lastTopRefresh = 0;
 let noticeTimer;
 let ownerKey = ''; // только в памяти до сохранения партии — НЕ localStorage
 let focusMode = false;
@@ -306,76 +309,173 @@ async function start(event) {
   ownerKey=reserved ? candidateKey : '';
   $('ownerCode').value = ''; // никогда не сохраняем код в браузере
   sessionId=remoteId;
+  clearTimeout(checkpointTimer);clearTimeout(checkpointRetryTimer);
+  checkpointTimer=null;checkpointRetryTimer=null;checkpointPromise=null;finalizePromise=null;
+  lastSavedScore=0;lastSavedTrace='';
   trace=''; ended=false; submitting=false; won=false;
   try {localStorage.setItem(NICK_KEY,name);} catch {}
   $('playerTag').textContent=nickname;
   $('playerTag').classList.toggle('player-tag--owner', reserved && (mode==='global'||mode==='tournament'));
   $('startOverlay').hidden=true;
-  $('finishButton').disabled=false;
   $('restartButton').disabled=false;
-  $('finishButton').textContent='Сохранить результат';
   $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
-  showMessage(mode==='tournament'?'Турнир начат. Результат нужно сохранить до окончания таймера!':mode==='global'?'Готово! Поехали за рекордом.':'Локальная партия. Для общего топа подключим Cloudflare.');
+  showMessage(mode==='local'?'Локальная игра · общий рейтинг недоступен.':'✓ Автосохранение включено');
   refreshBoard();
   if (shouldEnterFocus()) setFocusMode(true);
 }
+// Quiet autosave: only validated score increases are sent, never raw points.
+// Runs during play, not at every move. If the user closes the tab suddenly,
+// the latest successfully confirmed checkpoint remains in the ranking.
+function clearCheckpointTimers(){
+  clearTimeout(checkpointTimer);clearTimeout(checkpointRetryTimer);
+  checkpointTimer=null;checkpointRetryTimer=null;
+}
+function checkpointPayload(){
+  return {id:sessionId,moves:trace,
+    ...(ownerKey?{ownerKey}:{}),
+    ...(mode==='tournament' && tournamentInfo?.requiresTelegram?{telegramToken}:{})};
+}
+async function checkpoint({quiet=false,keepalive=false}={}) {
+  if(!game||ended||!sessionId||!(mode==='global'||mode==='tournament')||game.score<=lastSavedScore) return true;
+  if(checkpointPromise)return checkpointPromise;
+  clearTimeout(checkpointTimer);checkpointTimer=null;
+  const id=sessionId, moves=trace, currentMode=mode;
+  const payload=checkpointPayload();
+  const path=currentMode==='tournament'?tournamentRoute('checkpoint'):'/api/checkpoint';
+  checkpointPromise=(async()=>{
+    try{
+      // Normal requests use the existing client API and its timeout.
+      // Keepalive on backgrounding is best-effort, not guaranteed by browsers.
+      const result=keepalive
+        ? await (async()=>{
+            const resp=await fetch(API+path,{method:'POST',mode:'cors',keepalive:true,cache:'no-store',
+              headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+            const body=await resp.json();
+            if(!resp.ok||body.error){const e=Error(body.error||'Ошибка '+resp.status);e.httpStatus=resp.status;throw e;}
+            return body;
+          })()
+        : await apiCall(path,'POST',payload);
+      if(sessionId===id && result.ok){
+        lastSavedTrace=moves;
+        lastSavedScore=Math.max(lastSavedScore,Number(result.score)||0);
+        if(!quiet && !ended) showMessage(`✓ В рейтинге · ${lastSavedScore.toLocaleString('ru-RU')} очков`);
+        if(Date.now()-lastTopRefresh>9000 && document.visibilityState==='visible'){
+          lastTopRefresh=Date.now();void loadTop();
+        }
+      }
+      clearTimeout(checkpointRetryTimer);checkpointRetryTimer=null;
+      return true;
+    }catch(error){
+      if(sessionId===id && !ended){
+        if(!quiet) showMessage('Нет связи с рейтингом · повторяем синхронизацию');
+        // Never switch a tournament or reserved nickname to insecure local mode.
+        if(error.httpStatus===410 || error.httpStatus===403){
+          showMessage(error.message); // expired competition / authorization
+        }else{
+          clearTimeout(checkpointRetryTimer);
+          checkpointRetryTimer=setTimeout(()=>{checkpointRetryTimer=null;void checkpoint();},5000);
+        }
+      }
+      return false;
+    }finally{
+      checkpointPromise=null;
+      if(game && !ended && sessionId===id && game.score>lastSavedScore && !checkpointRetryTimer) scheduleCheckpoint();
+    }
+  })();
+  return checkpointPromise;
+}
+function scheduleCheckpoint(immediate=false){
+  if(!game||ended||!sessionId||game.score<=lastSavedScore)return;
+  if(checkpointTimer){if(!immediate)return;clearTimeout(checkpointTimer);}
+  const timeRemaining=mode==='tournament'&&tournamentInfo? tournamentInfo.endsAt-Date.now()-serverOffset:Infinity;
+  checkpointTimer=setTimeout(()=>{checkpointTimer=null;void checkpoint();},immediate||timeRemaining<12000?0:1800);
+}
 function move(direction) {
   if (!game || ended || submitting) return;
+  const before=game.score;
   if (!applyMove(game,direction)) return;
   trace+=direction;
+  if(!tournamentId)storeLocal(nickname,game.score);
   refreshBoard();
+  if(game.score>before)scheduleCheckpoint();
   if (!won && highestTile(game)>=2048) {
     won=true;
-    showMessage('🏆 2048 собрано! Можешь продолжать — очки считаются дальше.');
-  } else if (!hasMoves(game)) {
-    showMessage('Ходов больше нет. Сохраняем результат…');
+    notify('🏆 2048! Продолжай — рекорд сохраняется сам.');
+  }
+  if(!hasMoves(game)){
+    showMessage('Игра окончена · сохраняем результат');
     void finish();
-  } else showMessage('Используй стрелки, WASD или свайпы.');
+  }
 }
-async function finish() {
-  if (!game || submitting || (ended && !sessionId)) return;
-  submitting=true; ended=true;
-  $('finishButton').disabled=true;
-  $('finishButton').textContent='Сохраняем…';
-  if(!tournamentId) storeLocal(nickname,game.score);
-  let message='Результат сохранён на этом устройстве.';
-  if ((mode==='global'||mode==='tournament') && sessionId) {
-    try {
-      const response=await apiCall(mode==='tournament'?tournamentRoute('finish'):'/api/finish','POST',{id:sessionId,moves:trace, ...(ownerKey ? {ownerKey} : {}), ...(mode==='tournament' && tournamentInfo?.requiresTelegram ? {telegramToken}:{})});
-      message=`Результат ${Number(response.score).toLocaleString('ru-RU')} сохранён в ${mode==='tournament'?'турнирном':'общем'} рейтинге!`;
-      sessionId=null;
-      ownerKey='';
-    } catch(error) {
-      if(mode==='tournament' && [409,410].includes(error.httpStatus)) {
-        message='Турнир завершён. Новые результаты больше не принимаются. Уже сохранённые очки остаются в рейтинге.';
+async function finish(){
+  if(!game)return true;
+  if(finalizePromise)return finalizePromise;
+  clearCheckpointTimers();
+  ended=true;submitting=true;
+  const id=sessionId;
+  if(!tournamentId)storeLocal(nickname,game.score);
+  finalizePromise=(async()=>{
+    // A checkpoint may be pending: finishing with the full trace after it completes
+    // avoids racing the server's monotonic prefix validation.
+    if(checkpointPromise)await checkpointPromise;
+    if((mode==='global'||mode==='tournament')&&id){
+      try{
+        const result=await apiCall(mode==='tournament'?tournamentRoute('finish'):'/api/finish','POST',{
+          id,moves:trace,...(ownerKey?{ownerKey}:{}),
+          ...(mode==='tournament'&&tournamentInfo?.requiresTelegram?{telegramToken}:{})
+        });
+        lastSavedScore=Math.max(lastSavedScore,Number(result.score)||0);
         sessionId=null;ownerKey='';
-      } else {
-        message='Не удалось отправить результат: '+error.message+'. Нажми «Повторить отправку».';
-        $('finishButton').textContent='Повторить отправку';
-        $('finishButton').disabled=false;
+        showMessage('✓ Результат в рейтинге · '+lastSavedScore.toLocaleString('ru-RU'));
+        void loadTop();
+        return true;
+      }catch(error){
+        if(mode==='tournament' && [409,410].includes(error.httpStatus)){
+          sessionId=null;ownerKey='';
+          showMessage('Турнир закрыт · уже сохранённые очки остаются в рейтинге');
+          return true;
+        }
+        if(lastSavedScore>=game.score){
+          showMessage('✓ Последний рекорд в рейтинге');
+          return true;
+        }
+        showMessage('Не удалось синхронизировать результат · пробуем снова');
+        return false;
       }
     }
+    sessionId=null;ownerKey='';
+    showMessage('Результат сохранён на устройстве');
+    return true;
+  })();
+  const ok=await finalizePromise;
+  finalizePromise=null;submitting=false;
+  if(!ok && id===sessionId) {
+    // No Save button; retry automatically while page remains open.
+    checkpointRetryTimer=setTimeout(()=>{checkpointRetryTimer=null;void finish();},6000);
   }
-  if (mode==='local') sessionId=null;
-  submitting=false;
-  if (!sessionId) { $('finishButton').textContent='Результат сохранён'; $('finishButton').disabled=true; }
-  showMessage(message);
-  refreshBoard(); await loadTop();
+  return ok;
 }
-function newGame() {
-  if (game && ((sessionId && ended) || (!ended && trace.length>0)) && !confirm('Начать заново? Несохранённый общий результат может потеряться.')) return;
-  ended=true;
-  game=null; trace=''; sessionId=null; ownerKey='';
+async function newGame(){
+  if(submitting)return;
+  if(game && !ended && trace.length){
+    const ok=await finish();
+    if(!ok && !confirm('Сервер пока не подтвердил результат. Начать новую игру и оставить текущий рекорд несинхронизированным?'))return;
+  }else if(game && ended && sessionId){
+    const ok=await finish();
+    if(!ok && !confirm('Результат ещё не синхронизирован. Начать заново?'))return;
+  }
+  clearCheckpointTimers();
+  ended=true;game=null;trace='';sessionId=null;ownerKey='';
+  lastSavedScore=0;lastSavedTrace='';
   $('ownerCode').value='';
   $('startOverlay').hidden=false;
   $('startError').textContent='';
-  $('finishButton').disabled=true; $('restartButton').disabled=true;
-  $('finishButton').textContent='Сохранить результат';
+  $('restartButton').disabled=true;
   $('playerTag').textContent='Игрок не выбран';
   $('playerTag').classList.remove('player-tag--owner');
   $('score').textContent='0';
-  showMessage('Введи ник и начни новую партию.');
-  if (focusMode) setFocusMode(false);
+  showMessage('Собирай одинаковые числа — рекорд сохранится автоматически.');
+  if(focusMode)setFocusMode(false);
   $('nickname').focus();
 }
 
@@ -440,8 +540,7 @@ function init() {
   $('nickname').addEventListener('input', updateOwnerField);
   $('startForm').addEventListener('submit', start);
   updateOwnerField();
-  $('finishButton').addEventListener('click', ()=>void finish());
-  $('restartButton').addEventListener('click',newGame);
+  $('restartButton').addEventListener('click',()=>void newGame());
   $('refreshButton').addEventListener('click',()=>void loadTop());
   document.querySelectorAll('[data-direction]').forEach(btn => btn.addEventListener('click',()=>move(btn.dataset.direction)));
   document.addEventListener('keydown',e=>{
@@ -477,6 +576,18 @@ function init() {
     if(e.key==='Escape' && focusMode){setFocusMode(false);e.preventDefault();}
   });
   $('tgLoginButton').addEventListener('click',()=>void loginViaTelegram());
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden')void checkpoint({quiet:true,keepalive:true});
+    else if(game&&!ended&&game.score>lastSavedScore)scheduleCheckpoint(true);
+  });
+  window.addEventListener('pagehide',()=>{
+    if(game&&!ended&&sessionId&&game.score>lastSavedScore&&!checkpointPromise){
+      // sendBeacon is a best-effort fallback if navigation interrupts fetch.
+      // text/plain avoids a preflight during unloading.
+      const path=mode==='tournament'?tournamentRoute('checkpoint'):'/api/checkpoint';
+      try{navigator.sendBeacon?.(API+path,new Blob([JSON.stringify(checkpointPayload())],{type:'text/plain'}));}catch{}
+    }
+  });
   $('shareButton').addEventListener('click',async()=>{
     try { await navigator.clipboard.writeText('https://virotos.ru/2048/'); notify('Ссылка на игру скопирована!'); }
     catch {notify('Адрес игры: virotos.ru/2048/');}
