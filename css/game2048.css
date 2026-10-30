@@ -18,8 +18,9 @@ body { -webkit-tap-highlight-color: transparent; }
 .stat span { display:block; font-size:11px; color:#b8c2d6; margin-bottom:4px; }
 .stat strong { font-size:26px; font-variant-numeric:tabular-nums; }
 .game-board-wrap { position:relative; max-width:440px; margin:auto; }
-.game-board { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; padding:11px; aspect-ratio:1; border-radius:19px; background:#2d3451; touch-action:none; user-select:none; }
-.tile { display:flex; align-items:center; justify-content:center; border-radius:10px; background:#ffffff12; font-size:clamp(19px,4.7vw,34px); font-weight:850; font-variant-numeric:tabular-nums; transition:background .09s; }
+/* Four explicit rows prevent the grid from stretching rows with numbers. */
+.game-board { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(4,minmax(0,1fr)); gap:9px; padding:11px; aspect-ratio:1; border-radius:19px; background:#2d3451; touch-action:none; user-select:none; }
+.tile { min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; border-radius:10px; background:#ffffff12; font-size:clamp(19px,4.7vw,34px); font-weight:850; font-variant-numeric:tabular-nums; transition:background .09s; }
 .tile[data-value="2"] { background:#c0d0fc; color:#1c2740; }
 .tile[data-value="4"] { background:#a0bfff; color:#1b2743; }
 .tile[data-value="8"] { background:#889ff7; color:#131b37; }
