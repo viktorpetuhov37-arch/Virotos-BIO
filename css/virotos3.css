@@ -1,0 +1,418 @@
+/* VIROTOS 3.0 • visual system • no changes to site or game logic.
+   All themes share identical geometry / typography. */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b141b;
+  --text: #eaf4f5;
+  --muted: #a8bec5;
+  --blue: #67bec9;
+  --purple: #8dd4d2;
+  --line: rgba(133, 197, 204, .18);
+  --v-bg: #0b141b;
+  --v-surface: #14232c;
+  --v-surface-2: #1b303b;
+  --v-surface-3: #223c46;
+  --v-elevated: #192c36;
+  --v-ink: #eaf4f5;
+  --v-muted: #a8bec5;
+  --v-soft: #cadadd;
+  --v-accent: #67bec9;
+  --v-accent-strong: #8ddbd7;
+  --v-accent-ink: #0a252b;
+  --v-tint: rgba(103, 190, 201, .10);
+  --v-border: rgba(133, 197, 204, .18);
+  --v-border-strong: rgba(133, 197, 204, .37);
+  --v-overlay: rgba(6, 15, 21, .84);
+  --v-shadow: 0 18px 48px rgba(0,0,0,.19);
+  --v-bg-orb-a: rgba(45, 111, 122, .19);
+  --v-bg-orb-b: rgba(42, 90, 115, .14);
+  --v-panel-a: #182c36;
+  --v-panel-b: #12212b;
+  --v-selected: #24414b;
+  --v-contrast: #f8ffff;
+  --v-warm: #e2b869;
+  --v-error: #ffb9ad;
+  --v-game-board: #253b44;
+  --v-game-tile-empty: rgba(204, 231, 227, .10);
+  --v-hero-art: rgba(103, 190, 201, .10);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f2f3f0;
+  --text: #36291f;
+  --muted: #755e4e;
+  --blue: #9b6236;
+  --purple: #af794b;
+  --line: rgba(109, 78, 57, .17);
+  --v-bg: #f2f3f0;
+  --v-surface: #fffaf2;
+  --v-surface-2: #fee9ca;
+  --v-surface-3: #f4ddbd;
+  --v-elevated: #fff9ef;
+  --v-ink: #36291f;
+  --v-muted: #755e4e;
+  --v-soft: #574335;
+  --v-accent: #af794b;
+  --v-accent-strong: #83542f;
+  --v-accent-ink: #fffaf2;
+  --v-tint: rgba(175, 121, 75, .11);
+  --v-border: rgba(109, 78, 57, .17);
+  --v-border-strong: rgba(109, 78, 57, .35);
+  --v-overlay: rgba(40, 28, 21, .58);
+  --v-shadow: 0 18px 48px rgba(109, 78, 57, .075);
+  --v-bg-orb-a: rgba(217, 164, 96, .16);
+  --v-bg-orb-b: rgba(175, 121, 75, .07);
+  --v-panel-a: #fffaf2;
+  --v-panel-b: #fcebd4;
+  --v-selected: #f8e1be;
+  --v-contrast: #231910;
+  --v-warm: #96612c;
+  --v-error: #9c392a;
+  --v-game-board: #e9d5b7;
+  --v-game-tile-empty: rgba(109, 78, 57, .10);
+  --v-hero-art: rgba(175, 121, 75, .09);
+}
+html { min-width: 320px; }
+body {
+  color: var(--v-ink);
+  background: radial-gradient(ellipse at 3% 0%,var(--v-bg-orb-a),transparent 31%),
+              radial-gradient(ellipse at 100% 83%,var(--v-bg-orb-b),transparent 29%),
+              var(--v-bg);
+  font-family: Inter, "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  padding: 21px clamp(12px,3vw,27px);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea, select { font: inherit; }
+a { color: var(--v-accent-strong); }
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible {
+  outline: 3px solid var(--v-accent); outline-offset: 3px;
+}
+[hidden] { display:none!important; }
+.container { width:100%; min-width:0; }
+/* A single comfortable typographic scale in both palettes. */
+h1, .game-hero h1, .events-title, .music-route-hero h1 {
+  font-size: clamp(33px, 5.5vw, 61px)!important;
+  line-height: 1.13!important;
+  letter-spacing: -.025em!important;
+  font-weight: 780;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+h2, .events-panel h2, .game-panel-heading h2, .leaderboard-heading h2 {
+  font-size: clamp(19px, 2.6vw, 24px);
+  letter-spacing: -.015em;
+  line-height: 1.27;
+  text-wrap: pretty;
+}
+h3, h4 { line-height:1.3; letter-spacing:-.01em; }
+.eyebrow, .small-caption, .catalog-overline {
+  color: var(--v-accent-strong);
+  letter-spacing: .14em;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+header {
+  gap: 14px;
+  margin-bottom: 18px;
+  font-size: 12px;
+  color: var(--v-muted);
+}
+header .logo, .logo {
+  color: var(--v-ink);
+  font-size: clamp(13px,2.2vw,15px);
+  letter-spacing: .12em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.logo span {color:var(--v-accent)}
+.virotos-header-actions {display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:9px;min-width:0;}
+.virotos-header-note {color:var(--v-muted);font-size:12px;}
+.virotos-theme-toggle {
+  min-height:38px; display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  flex:none; border:1px solid var(--v-border-strong); border-radius:999px;
+  padding:7px 12px; background:var(--v-surface); color:var(--v-ink);
+  cursor:pointer; font-size:12px;font-weight:730;
+  box-shadow:0 2px 7px rgba(0,0,0,.025);
+  transition:border-color .18s, background .18s,transform .18s;
+}
+.virotos-theme-toggle:hover {background:var(--v-surface-2);border-color:var(--v-accent);transform:translateY(-1px)}
+.virotos-theme-toggle svg {width:16px;height:16px;flex:none;stroke:var(--v-accent-strong)}
+/* Reusable, restrained surfaces: corner symbols and soft directional light. */
+.hero, .game-hero, .music-route-hero, .game-panel,.leaderboard-panel,
+.events-panel,.events-admin,.music-page-panel,.card,.honor-person {
+  border-color:var(--v-border);
+  box-shadow:var(--v-shadow);
+}
+.hero, .game-hero {
+  isolation:isolate;
+  position:relative;
+  overflow:hidden;
+  background: radial-gradient(circle at 96% 4%, var(--v-hero-art), transparent 42%),
+              linear-gradient(126deg,var(--v-panel-a),var(--v-panel-b));
+  border:1px solid var(--v-border);
+  border-radius:24px;
+}
+.hero::before, .game-hero::before {
+  content:""; position:absolute;right:-45px;top:-54px;width:155px;height:155px;
+  border:1px solid var(--v-border-strong); border-radius:50%;pointer-events:none;
+  box-shadow:0 0 0 21px var(--v-tint),0 0 0 47px transparent;
+  opacity:.44;
+}
+.hero::after {font-size:clamp(130px,26vw,225px);right:13px;top:-22px;color:var(--v-hero-art);opacity:1;line-height:1;}
+.hero {padding:clamp(23px,4.5vw,44px)}
+.hero h1 {margin:12px 0 13px;max-width:740px;}
+.intro {line-height:1.75;color:var(--v-muted);font-size:clamp(14px,1.7vw,16px);max-width:630px;}
+.tag {
+  color:var(--v-soft);border-color:var(--v-border);
+  background:var(--v-tint);font-size:12px;
+  padding:7px 11px;
+}
+.tags {margin-top:20px;gap:8px;}
+.section-heading {margin:26px 2px 13px;gap:7px;}
+.section-heading p {color:var(--v-muted);margin:0;font-size:12px;}
+.cards {gap:12px;}
+.card {
+  min-height:154px; padding:19px; border:1px solid var(--v-border);
+  border-radius:19px; background:var(--v-surface);
+  color:var(--v-ink); position:relative;overflow:hidden;
+}
+.card::after {
+  content:"";position:absolute;right:-29px;bottom:-40px;width:119px;height:119px;
+  border:1px solid var(--v-border);border-radius:30px;transform:rotate(32deg);
+  pointer-events:none;opacity:.58;
+}
+.card:nth-child(3n+2) {background:linear-gradient(133deg,var(--v-surface),var(--v-surface-2));}
+.card:hover,.music-card:hover {
+  background:var(--v-selected);border-color:var(--v-border-strong);
+  box-shadow:0 15px 30px rgba(0,0,0,.08);transform:translateY(-3px);
+}
+.card-icon {background:var(--v-tint);color:var(--v-accent-strong);border:1px solid var(--v-border);}
+.card-title {font-size:16px;line-height:1.3;letter-spacing:-.01em;}
+.card-desc {color:var(--v-muted);line-height:1.55;}
+.arrow{color:var(--v-accent-strong)}
+footer {color:var(--v-muted);padding-top:20px;}
+/* Dialogs and profile cards must follow theme instead of retaining old purple. */
+.backdrop{background:var(--v-overlay)}
+.modal,.modal-header {background:var(--v-surface);border-color:var(--v-border);}
+.modal{box-shadow:0 30px 110px rgba(0,0,0,.26)}
+.modal-body{color:var(--v-ink);scrollbar-color:var(--v-border-strong) var(--v-surface)}
+.modal-header h3,.profile-intro h4,.profile-subtitle,.honor-heading,.honor-person strong,.event strong {color:var(--v-ink)}
+.close,.action,.social-copy,.lyrics-toggle,.music-share-track {
+  background:var(--v-surface-2);color:var(--v-ink);border-color:var(--v-border);
+}
+.close:hover,.action:hover {background:var(--v-selected);border-color:var(--v-border-strong)}
+.action.primary,.music-play {
+  background:var(--v-accent);color:var(--v-accent-ink);
+  box-shadow:none;
+}
+.event::before{box-shadow:none}
+.profile-mark {background:var(--v-surface-2);color:var(--v-accent-strong);border-color:var(--v-border)}
+.profile-intro p,.honor-intro {color:var(--v-muted)}
+.social-link,.honor-person,.honor-person.featured {background:var(--v-surface-2);color:var(--v-ink);border-color:var(--v-border)}
+.social-link:hover,.honor-person:hover {background:var(--v-selected);border-color:var(--v-border-strong)}
+.social-icon,.social-copy{color:var(--v-accent-strong);background:var(--v-tint)}
+.social-link > span:last-child,.honor-person .honor-date{color:var(--v-accent-strong)}
+.action:hover{transform:translateY(-1px)}
+/* Music catalogue and player */
+.music-card {background:linear-gradient(125deg,var(--v-surface),var(--v-surface-2));}
+.music-card .card-icon {color:var(--v-accent-strong);background:var(--v-tint)}
+.music-back,.music-copy-link,.music-tab,.music-share-track,.lyrics-toggle {
+  background:var(--v-surface);color:var(--v-ink);border-color:var(--v-border);
+}
+.music-back:hover,.music-copy-link:hover,.music-tab:hover,.music-share-track:hover,.lyrics-toggle:hover {
+  background:var(--v-selected);border-color:var(--v-border-strong);color:var(--v-ink);
+}
+.music-route-hero {text-align:left;padding:clamp(18px,3vw,29px) 0 clamp(15px,3vw,26px);box-shadow:none;background:none;border:none;}
+.music-route-hero h1 {margin:10px 0 9px;}
+.music-route-hero p {margin:0;max-width:650px;line-height:1.65;color:var(--v-muted)}
+.music-page-panel {background:linear-gradient(145deg,var(--v-panel-a),var(--v-panel-b));border-color:var(--v-border);border-radius:22px;}
+.catalog-title,.music-title {letter-spacing:-.015em;line-height:1.25;}
+.catalog-overline,.catalog-mark,.music-release-status{color:var(--v-accent-strong)}
+.catalog-mark{border-color:var(--v-border);background:var(--v-tint)}
+.music-tab[aria-selected="true"] {background:var(--v-accent);border-color:var(--v-accent);color:var(--v-accent-ink)}
+.music-tab-count,.catalog-caption,.track-card-meta,.track-card-time,.music-track-description,
+.music-footnote,.music-times,.music-volume,.lyrics-note{color:var(--v-muted)}
+.track-card {background:var(--v-surface);color:var(--v-ink);border-color:var(--v-border);}
+.track-card:hover,.track-card.selected {background:var(--v-selected);border-color:var(--v-border-strong)}
+.track-card.selected{box-shadow:inset 3px 0 var(--v-accent)}
+.track-card-arrow,.music-art-label {color:var(--v-accent-strong)}
+.music-player-shell {background:var(--v-surface);border-color:var(--v-border)}
+.music-title{color:var(--v-ink)}
+.music-seek,.music-volume input {accent-color:var(--v-accent)}
+.lyrics-wrap{background:var(--v-surface-2);border-color:var(--v-border)}
+.lyrics-header strong{color:var(--v-ink)}
+.lyric-line{color:var(--v-muted)}
+.lyric-line.past{color:var(--v-soft)}
+.lyric-line.active,.lyric-line:hover{color:var(--v-ink);text-shadow:none}
+.lyrics-empty{color:var(--v-muted)}
+/* Arcade: the grid mechanics and tile colors are deliberately kept unchanged. */
+.game-nav a,.game-nav button,.arcade-mode,.game-focus-button,.game-focus-exit,
+.game-actions button,.game-dpad button,.leaderboard-heading button {
+  background:var(--v-surface);color:var(--v-ink);border-color:var(--v-border);
+}
+.game-nav a:hover,.game-nav button:hover,.arcade-mode:hover,.game-focus-button:hover,.game-actions button:hover:not(:disabled),.game-dpad button:active {
+  background:var(--v-selected);color:var(--v-ink);border-color:var(--v-border-strong);
+}
+.game-hero{padding:clamp(19px,3vw,27px);margin-bottom:14px;}
+.game-hero h1{margin:8px 0 7px}
+.game-hero p{color:var(--v-muted);max-width:700px;line-height:1.55}
+.arcade-modes{gap:9px;margin:0 0 13px;}
+.arcade-mode{min-height:43px;flex:1 1 160px;padding:10px 14px;font-weight:700;border-radius:12px;}
+.arcade-mode--active,.events-view-tab--active {
+  background:var(--v-accent)!important;color:var(--v-accent-ink)!important;
+  border-color:var(--v-accent)!important;
+}
+.game-panel,.leaderboard-panel,.events-panel,.events-admin {
+  border:1px solid var(--v-border);
+  border-radius:20px;
+  background:var(--v-surface);
+  padding:clamp(16px,2.7vw,23px);
+}
+.game-columns,.events-layout{gap:14px}
+.game-panel-heading h2,.leaderboard-heading h2{margin:4px 0 0;}
+.small-caption{color:var(--v-accent-strong)}
+.player-tag,.stat,.record-hint,.tournament-play-note{background:var(--v-surface-2);color:var(--v-ink);border-color:var(--v-border)}
+.stat span,.game-message,.game-footnote,.game-mobile-hint,.leaderboard-status,
+.leaderboard-explainer,.leaderboard-empty,.record-hint,.tournament-play-note span {color:var(--v-muted)}
+.game-board {background:var(--v-game-board)}
+.tile:not([data-value]),.tile[data-value="0"]{background:var(--v-game-tile-empty)}
+.game-overlay{background:color-mix(in srgb,var(--v-surface) 94%, transparent);color:var(--v-ink)}
+.game-start-form p,.game-start-form label,.owner-code-hint{color:var(--v-muted)}
+.game-start-form input,.events-form input,.events-form textarea {
+  background:var(--v-elevated);color:var(--v-ink);border:1px solid var(--v-border-strong);
+}
+.game-start-form input::placeholder,.events-form input::placeholder,.events-form textarea::placeholder{color:var(--v-muted);opacity:.8}
+.game-start-form input:focus{border-color:var(--v-accent);box-shadow:0 0 0 3px var(--v-tint)}
+.game-start-form .accent-button,.events-cta,.tg-auth-button {
+  background:var(--v-accent)!important;color:var(--v-accent-ink)!important;border:1px solid var(--v-accent)!important;
+}
+.game-start-form small{color:var(--v-error)}
+.game-stats{margin:14px 0}
+.game-board-wrap{width:100%;}
+.game-actions button{border-radius:12px;min-height:44px}
+.game-toast{background:var(--v-elevated);color:var(--v-ink);border:1px solid var(--v-border)}
+.leaderboard{gap:8px;margin:12px 0 17px}
+.leaderboard li,.leaderboard li:nth-child(n+4) {
+  background:var(--v-surface-2);border-color:var(--v-border);color:var(--v-ink);
+  padding:12px;
+}
+.leaderboard li:first-child {background:linear-gradient(110deg,var(--v-surface-2),var(--v-selected));border-color:rgba(191,148,67,.6)}
+.leaderboard li:nth-child(2),.leaderboard li:nth-child(3){border-color:var(--v-border-strong)}
+.leaderboard-points {color:var(--v-accent-strong)}
+.leaderboard-nickname--gold{filter:none}
+.leaderboard-owner-badge {border-color:rgba(237,68,115,.45)}
+.leaderboard-empty{border:1px dashed var(--v-border-strong)}
+.tournament-play-note{background:var(--v-surface-2)}
+.tournament-countdown{color:var(--v-warm)}
+.tournament-play-note a{color:var(--v-accent-strong)}
+.tg-auth-panel{background:var(--v-surface-2);color:var(--v-ink);border-color:var(--v-border-strong)}
+.tg-auth-panel p,.tg-auth-panel strong,.tg-auth-panel a{color:var(--v-ink)}
+/* IMPORTANT: focused game remains fixed/fullscreen and swipe-safe. */
+body.arcade-focus .game-panel{background:var(--v-bg);box-shadow:none}
+body.arcade-focus .game-stats{margin:8px 0}
+body.arcade-focus .game-panel-heading h2{font-size:17px}
+body.arcade-focus .game-overlay{background:color-mix(in srgb,var(--v-bg) 96%, transparent)}
+/* Event history + admin: all legible in light mode too. */
+.events-title{font-size:clamp(33px,5.5vw,61px)!important}
+.events-panel h2{font-size:clamp(19px,2.5vw,23px)}
+.events-bar button,.events-detail-actions button,.events-admin-actions button,.events-view-tab,.tg-webhook-setup button {
+  background:var(--v-surface-2);color:var(--v-ink);border-color:var(--v-border-strong);
+}
+.events-bar button:hover,.events-detail-actions button:hover,.events-admin-actions button:hover,.events-view-tab:hover,.tg-webhook-setup button:hover {
+  background:var(--v-selected);color:var(--v-ink);
+}
+.events-view-tabs{gap:9px;margin:0 0 14px}
+.events-view-tab{min-height:44px;padding:10px 13px;font-weight:700;}
+.events-view-count{background:var(--v-tint);color:inherit}
+.event-card{background:var(--v-surface-2);color:var(--v-ink);border-color:var(--v-border);}
+.event-card:hover,.event-card--selected {background:var(--v-selected);border-color:var(--v-accent)}
+.event-card strong,.events-admin-toggle,.events-form label{color:var(--v-ink)}
+.event-card p,.event-info,.events-muted,#eventsStatus,.selected-event-meta,.events-disclaimer,
+.events-status,.event-history-cue,.tg-webhook-setup,.events-panel .leaderboard-explainer{color:var(--v-muted)}
+.event-status{background:var(--v-surface-3);color:var(--v-ink)}
+.event-status--active{background:#235f4e;color:#defff2}
+:root[data-theme="light"] .event-status--active{background:#d5eee0;color:#205a42}
+.event-status--finished{background:#644b37;color:#fff1d5}
+:root[data-theme="light"] .event-status--finished{background:#f1e1cd;color:#6d4e39}
+.selected-event-meta strong{color:var(--v-warm)}
+.events-checkbox-label input{accent-color:var(--v-accent)}
+.tg-webhook-setup{border-color:var(--v-border-strong);background:var(--v-tint)}
+.events-admin-toggle{font-size:16px}
+/* Premium rank treatments remain legible in the warm palette. */
+:root[data-theme="light"] .leaderboard-nickname--gold {
+  background:linear-gradient(105deg,#70441b,#a8742b 45%,#78501e 74%,#bb8130);
+  -webkit-background-clip:text;background-clip:text;
+}
+:root[data-theme="light"] .leaderboard li.leaderboard-row--owner {
+  background:linear-gradient(110deg,#fde7ee,#fae9dd);
+  border-color:#c96887;
+}
+:root[data-theme="light"] .leaderboard-owner-badge {
+  color:#8f2f56;background:#ffe6ee;border-color:#db9bb3;
+}
+:root[data-theme="light"] .player-tag.player-tag--owner {
+  color:#862f50;background:#ffe6ef;border-color:#d987a3;box-shadow:none;
+}
+/* Responsive rules — reflow only; identical in both themes. */
+@media(max-width:800px){
+  .game-columns,.events-layout{grid-template-columns:1fr}
+  .game-page,.music-page-container{max-width:700px}
+}
+@media(max-width:640px){
+  body{padding:13px 12px;font-size:14px}
+  header{margin-bottom:12px;align-items:center;gap:7px}
+  .virotos-header-note{display:none}
+  .virotos-theme-toggle{padding:7px 10px;min-height:36px}
+  .hero{padding:23px 19px}
+  .hero::before,.game-hero::before{width:105px;height:105px;right:-48px;top:-40px}
+  .hero::after{right:-8px;top:10px;font-size:135px}
+  h1,.game-hero h1,.music-route-hero h1,.events-title {font-size:clamp(31px,8vw,43px)!important;letter-spacing:-.018em!important;line-height:1.18!important}
+  .eyebrow{font-size:9px;letter-spacing:.12em}
+  .intro{font-size:14px;line-height:1.68}
+  .tags{margin-top:16px}
+  .section-heading{margin:21px 2px 10px}
+  .section-heading h2{font-size:18px}
+  .cards{gap:9px}
+  .card{padding:13px;min-height:129px;gap:16px;border-radius:16px}
+  .card-icon{width:35px;height:35px;font-size:17px;border-radius:10px}
+  .card-title{font-size:14px}
+  .card-desc{font-size:11px;line-height:1.45}
+  .game-hero{padding:18px 19px;border-radius:19px}
+  .game-panel,.leaderboard-panel,.events-panel,.events-admin{border-radius:18px;padding:15px}
+  .game-stats{gap:8px}
+  .stat{padding:10px 12px}
+  .stat strong{font-size:23px}
+  .game-nav{gap:7px;margin-bottom:12px}
+  .game-nav a,.game-nav button{font-size:12px;padding:9px 10px}
+  .arcade-modes{gap:7px}
+  .arcade-mode{font-size:13px;min-height:42px;padding:9px 10px}
+  .events-view-tabs{grid-template-columns:1fr 1fr;gap:8px}
+  .events-view-tab{font-size:12px;gap:5px;padding:9px 7px;min-height:44px}
+  .events-panel h2{font-size:19px}
+  .events-bar{align-items:flex-start}
+  .events-bar button{white-space:nowrap;font-size:12px;padding:9px 10px}
+  .music-page-panel{padding:14px}
+  .music-route-hero{padding:15px 4px 19px}
+  .music-page-nav{margin-bottom:9px}
+  .music-back,.music-copy-link{min-height:40px}
+  .catalog-title{font-size:23px}
+  .music-tabs{margin-top:16px}
+  .music-player-shell{padding:15px}
+  footer{font-size:11px}
+}
+@media(max-width:380px){
+  header .logo{letter-spacing:.07em;font-size:12px}
+  .virotos-theme-toggle span{display:none}
+  .virotos-theme-toggle{width:38px;padding:8px}
+  .arcade-mode{font-size:12px;padding:8px 7px}
+  .events-view-tab{font-size:11px}
+  .events-bar{flex-wrap:wrap}
+  .game-panel-heading{flex-wrap:wrap}
+  .game-panel-tools{margin-left:auto}
+  .leaderboard li{gap:6px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
