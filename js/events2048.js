@@ -63,7 +63,7 @@ function showCard(t){
   if(t.prize)btn.append(tag('p','🎁 '+t.prize));
   btn.append(tag('p',t.requiresTelegram?'🔐 Участие с подтверждением Telegram':'🎮 Участие по игровому нику'));
   btn.append(tag('span',statusText(t),'event-card-clock'));
-  if(stat==='finished')btn.append(tag('span','🏅 Посмотреть итоговый топ-3','event-history-cue'));
+  if(stat==='finished')btn.append(tag('span','🏅 Посмотреть итоговый топ-10','event-history-cue'));
   btn.addEventListener('click',()=>void selectEvent(t.id));
   return btn;
 }
@@ -71,7 +71,7 @@ function paintCards(){
   const parent=$('eventsList');clear(parent);
   const visible=visibleEvents();
   if(!visible.length){
-    parent.append(tag('p',view==='history'?'История пока пуста. Завершённые турниры появятся здесь вместе с итоговым топ-3.':'Сейчас нет активных или запланированных турниров. Итоги прошедших событий — во вкладке «История турниров».','events-muted'));
+    parent.append(tag('p',view==='history'?'История пока пуста. Завершённые турниры появятся здесь вместе с итоговым топ-10.':'Сейчас нет активных или запланированных турниров. Итоги прошедших событий — во вкладке «История турниров».','events-muted'));
     return;
   }
   const now=Date.now()+clockDelta;
@@ -84,11 +84,11 @@ function paintCards(){
 function showRanking(rows){
   clear($('tournamentLeaderboard'));const el=$('tournamentLeaderboard');
   if(!rows.length){el.append(tag('li','Пока нет сохранённых результатов.','leaderboard-empty'));return;}
-  rows.slice(0,3).forEach((p,i)=>{
+  rows.slice(0,10).forEach((p,i)=>{
     const li=document.createElement('li'),owner=p.nickname==='Virotos',name=tag('span',p.nickname,'leaderboard-nickname'+(owner?' leaderboard-nickname--owner':i===0?' leaderboard-nickname--gold':''));
     const box=tag('span','', 'leaderboard-name');box.append(name);
     if(owner){li.classList.add('leaderboard-row--owner');box.append(tag('span','✦ OWNER','leaderboard-owner-badge'));}
-    li.append(tag('span',['🥇','🥈','🥉'][i],'leaderboard-medal'),box,tag('span',Number(p.score).toLocaleString('ru-RU'),'leaderboard-points'));
+    li.append(tag('span',(['🥇','🥈','🥉'][i]||String(i+1)+'.'),'leaderboard-medal'),box,tag('span',Number(p.score).toLocaleString('ru-RU'),'leaderboard-points'));
     el.append(li);
   });
 }

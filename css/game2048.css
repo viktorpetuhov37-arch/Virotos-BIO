@@ -176,3 +176,59 @@ body { -webkit-tap-highlight-color: transparent; }
 .tg-auth-button{border:1px solid #65b5ff70;border-radius:11px;background:#286497;color:#fff;padding:12px;cursor:pointer;font-weight:800}
 .tg-auth-button:disabled{opacity:.6;cursor:progress}
 .tg-auth-panel a{color:#a5d1ff;font-size:13px}
+
+/* MOBILE FOCUS v1 — fullscreen play layer, zero page scroll during swipes. */
+html { overscroll-behavior-y:none; }
+body { overscroll-behavior-y:none; }
+.game-panel-tools { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
+.game-focus-button,.game-focus-exit { border:1px solid #879ef37a; background:#2d395d; color:#eef3ff; border-radius:12px; padding:9px 12px; min-height:42px; cursor:pointer; font-size:12px; font-weight:850; white-space:nowrap; touch-action:manipulation; }
+.game-focus-button:hover,.game-focus-exit:hover { background:#3b5181; }
+.game-focus-exit[hidden] {display:none!important;}
+.game-focus-exit { background:#613347; border-color:#fa87ac7a; }
+.game-mobile-hint {color:#b1c2e0;font-size:12px;line-height:1.5;margin:12px 0 0;}
+.game-board-wrap,.game-board,.game-board * { touch-action:none; }
+.game-board { overscroll-behavior: none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+.leaderboard li:nth-child(n+4) { background:#1e283d; }
+.leaderboard li:nth-child(n+4) .leaderboard-medal {font-size:16px; font-weight:850; text-align:center;color:#8ea8dd;}
+body.arcade-focus { position:fixed;inset:0;width:100%;height:100dvh;overflow:hidden!important;overscroll-behavior:none;}
+body.arcade-focus .game-panel { position:fixed; z-index:1000; inset:0; height:100dvh; border:0; border-radius:0; background:linear-gradient(160deg,#131a2c,#11121d); padding:calc(7px + env(safe-area-inset-top,0px)) 12px calc(7px + env(safe-area-inset-bottom,0px)); overflow:hidden; display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start; overscroll-behavior:none; }
+body.arcade-focus .game-panel-heading { flex:0 0 auto; min-height:40px; }
+body.arcade-focus .game-panel-heading .small-caption { font-size:8px; letter-spacing:1.4px; }
+body.arcade-focus .game-panel-heading h2 {font-size:17px;margin-top:1px;}
+body.arcade-focus .player-tag { max-width:112px; padding:5px 8px; }
+body.arcade-focus .game-focus-button { display:none; }
+body.arcade-focus .game-stats { flex:0 0 auto; gap:8px; margin:8px 0; }
+body.arcade-focus .stat { padding:7px 12px; }
+body.arcade-focus .stat strong {font-size:21px;}
+body.arcade-focus .stat span {font-size:10px;margin-bottom:1px;}
+body.arcade-focus .game-board-wrap { width:min(calc(100vw - 24px), calc(100dvh - 235px), 550px); height:auto; flex:0 0 auto; margin:auto; max-width:100%; }
+body.arcade-focus .game-board { gap:clamp(5px,1.3vw,10px);padding:clamp(6px,1.6vw,11px);height:auto; }
+body.arcade-focus .tile {font-size:clamp(19px,6vw,35px);}
+body.arcade-focus .game-message { flex:0 0 auto; min-height:0; line-height:1.35; padding:5px 0; font-size:11px; }
+body.arcade-focus .game-actions { flex:0 0 auto; margin:4px 0 0; gap:8px; }
+body.arcade-focus .game-actions button { padding:9px 8px; font-size:12px; min-height:42px; }
+body.arcade-focus .game-dpad,body.arcade-focus .game-footnote,body.arcade-focus .game-mobile-hint {display:none;}
+body.arcade-focus .game-overlay { padding:12px; overflow:auto; align-items:safe center; }
+body.arcade-focus .game-start-form { max-width:350px; gap:8px; }
+body.arcade-focus .game-start-form .overlay-symbol { display:none; }
+body.arcade-focus .game-start-form h3 { font-size:23px; }
+body.arcade-focus .game-start-form p { font-size:11px; }
+@media (max-width:540px) {
+ .game-panel-tools .player-tag {max-width:92px;}
+ .game-focus-button { min-height:38px; padding:7px 9px; }
+ .game-focus-button span {display:none;}
+ .game-focus-exit {font-size:11px;}
+ .game-dpad { display:none; } /* swipe-first on touch screens */
+ .leaderboard li { min-height:52px; }
+ .game-nav {gap:6px;}
+ .game-nav a,.game-nav button{font-size:11px;padding:9px 10px;}
+}
+@media (max-height:630px) {
+ body.arcade-focus .game-board-wrap {width:min(calc(100vw - 24px),calc(100dvh - 205px),550px);}
+ body.arcade-focus .game-panel {padding-top:calc(4px + env(safe-area-inset-top,0px));padding-bottom:calc(3px + env(safe-area-inset-bottom,0px));}
+ body.arcade-focus .game-stats {margin:5px 0;}
+ body.arcade-focus .game-message {padding:2px 0;}
+}
+@media (prefers-reduced-motion:reduce) {
+ .game-focus-button,.game-focus-exit {transition:none;}
+}

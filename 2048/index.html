@@ -4,14 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0e1019">
-  <meta name="description" content="VIROTOS 2048 — играй, набирай очки и попади в топ-3 игроков сайта.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="VIROTOS 2048 — играй, набирай очки и попади в топ-10 игроков сайта.">
   <meta property="og:title" content="VIROTOS 2048 — таблица рекордов">
-  <meta property="og:description" content="Собери 2048, обойди соперников и займи место в топ-3.">
+  <meta property="og:description" content="Собери 2048, обойди соперников и займи место в топ-10.">
   <meta property="og:url" content="https://virotos.ru/2048/">
   <link rel="canonical" href="https://virotos.ru/2048/">
   <title>VIROTOS 2048 — игровой зал</title>
   <link rel="stylesheet" href="../css/main.css">
-  <link rel="stylesheet" href="../css/game2048.css">
+  <link rel="stylesheet" href="../css/game2048.css?v=mobile1">
 </head>
 <body>
   <main class="container game-page">
@@ -46,7 +47,11 @@
             <div class="small-caption">ИГРОВОЕ ПОЛЕ</div>
             <h2 id="playHeading">Твоя партия</h2>
           </div>
-          <div id="playerTag" class="player-tag">Игрок не выбран</div>
+          <div class="game-panel-tools">
+            <div id="playerTag" class="player-tag">Игрок не выбран</div>
+            <button id="focusButton" type="button" class="game-focus-button" aria-pressed="false" aria-label="Включить режим игры без прокрутки">⛶ <span>Режим игры</span></button>
+            <button id="exitFocusButton" type="button" class="game-focus-exit" hidden>✕ Выйти</button>
+          </div>
         </div>
 
         <div class="game-stats">
@@ -54,7 +59,7 @@
           <div class="stat"><span title="Только этот браузер. Не равно результату, сохранённому на сервере">Личный рекорд (на устройстве)</span><strong id="best">0</strong></div>
         </div>
 
-        <div class="game-board-wrap">
+        <div class="game-board-wrap" id="boardWrap">
           <div id="board" class="game-board" role="grid" aria-label="Игровое поле 4 на 4"></div>
           <div id="startOverlay" class="game-overlay">
             <form id="startForm" class="game-start-form" autocomplete="off">
@@ -80,7 +85,7 @@
             </form>
           </div>
         </div>
-        <div id="message" role="status" aria-live="polite" class="game-message">Управление: стрелки, WASD или свайпы по полю.</div>
+        <div id="message" role="status" aria-live="polite" class="game-message">Управление: свайпами по полю или клавишами. На телефоне включи «Режим игры».</div>
         <div class="game-actions">
           <button id="finishButton" type="button" disabled>Сохранить результат</button>
           <button id="restartButton" type="button" disabled>Новая игра</button>
@@ -91,13 +96,14 @@
           <button type="button" data-direction="D" aria-label="Вниз">↓</button>
           <button type="button" data-direction="R" aria-label="Вправо">→</button>
         </div>
+        <p class="game-mobile-hint">📱 В режиме игры страница не прокручивается. Свайпай прямо по плиткам. Кнопка «Выйти» вернёт страницу без сброса партии.</p>
         <p class="game-footnote"><strong>Важно:</strong> личный рекорд сохраняется в браузере, но в общий или турнирный зачёт очки попадают только после нажатия «Сохранить результат» и подтверждения от сервера. <span aria-hidden="true">·</span> Одинаковые числа складываются. Кнопка «Сохранить результат» завершает текущую партию. Отмена хода недоступна.</p>
       </section>
 
       <aside class="leaderboard-panel" aria-labelledby="leaderboardHeading">
         <div class="small-caption">HALL OF FAME</div>
         <div class="leaderboard-heading">
-          <h2 id="leaderboardHeading">Топ-3 игроков</h2>
+          <h2 id="leaderboardHeading">Топ-10 игроков</h2>
           <button id="refreshButton" type="button" aria-label="Обновить таблицу" title="Обновить таблицу">↻</button>
         </div>
         <p id="leaderboardStatus" class="leaderboard-status">Загрузка рекордов…</p>
@@ -109,6 +115,7 @@
     <footer><span>© <span id="year"></span> Virotos</span><span>Аркада № 001 • игра 2048</span></footer>
   </main>
   <div id="notification" role="status" aria-live="polite" class="game-toast"></div>
-  <script type="module" src="../js/game2048.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script type="module" src="../js/game2048.js?v=mobile1"></script>
 </body>
 </html>

@@ -35,7 +35,7 @@ async function setupTournament() {
   $('eventPlayNotice').hidden=false;
   $('eventsTab').classList.add('arcade-mode--active');
   $('freeTab').classList.remove('arcade-mode--active');
-  $('leaderboardHeading').textContent='Топ-3 турнира';
+  $('leaderboardHeading').textContent='Топ-10 турнира';
   $('heroSubtitle').textContent='Турнирный режим: баллы учитываются только до дедлайна.';
   $('startButton').disabled=true;
   if(!validTournamentId || !API) { $('startError').textContent='Неверная ссылка или сервер не подключён'; return; }
@@ -66,12 +66,64 @@ let game = null, nickname = '', sessionId = null, mode = 'local';
 let trace = '', ended = false, submitting = false, won = false;
 let noticeTimer;
 let ownerKey = ''; // только в памяти до сохранения партии — НЕ localStorage
+let focusMode = false;
+let focusScrollY = 0;
+// Если страница открыта именно как Telegram Mini App (не просто ссылка в чате),
+// можно отключать вертикальный жест сворачивания. Жест по заголовку Telegram останется.
+function telegramApp() {
+  const tg = window.Telegram?.WebApp;
+  return tg && typeof tg.expand === 'function' && tg.initData ? tg : null;
+}
+function telegramGameMode(active, explicit = false) {
+  const tg = telegramApp();
+  if (!tg) return;
+  try {
+    if (active) {
+      tg.expand();
+      tg.disableVerticalSwipes?.();
+      tg.enableClosingConfirmation?.();
+      // При ручном нажатии можно запросить настоящий fullscreen Telegram.
+      if (explicit) {
+        const result = tg.requestFullscreen?.();
+        if (result && typeof result.catch === 'function') result.catch(() => {});
+      }
+    } else {
+      tg.enableVerticalSwipes?.();
+      tg.disableClosingConfirmation?.();
+      if (tg.isFullscreen) tg.exitFullscreen?.();
+    }
+  } catch (_) { /* старые версии Telegram не поддерживают все методы */ }
+}
+function setFocusMode(active, explicit = false) {
+  if (focusMode === active) return;
+  focusMode = active;
+  if (active) {
+    focusScrollY = window.scrollY;
+    document.body.style.top = `-${focusScrollY}px`;
+  }
+  document.body.classList.toggle('arcade-focus', active);
+  if (!active) {
+    document.body.style.top = '';
+    window.scrollTo(0, focusScrollY);
+  }
+  $('focusButton').setAttribute('aria-pressed', String(active));
+  $('exitFocusButton').hidden = !active;
+  telegramGameMode(active, explicit);
+  if (active) {
+    document.activeElement?.blur?.();
+  } else {
+    $('focusButton').focus({preventScroll:true});
+  }
+}
+function shouldEnterFocus() {
+  return window.matchMedia('(pointer:coarse) and (max-width:900px)').matches;
+}
 
 function storageRead() {
   try { const v = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); return Array.isArray(v) ? v : []; }
   catch { return []; }
 }
-function localTop() { return storageRead().sort((a,b) => b.score - a.score).slice(0,3); }
+function localTop() { return storageRead().sort((a,b) => b.score - a.score).slice(0,10); }
 function localBest() { return Math.max(0, ...storageRead().map(r => r.score)); }
 function storeLocal(name, score) {
   try {
@@ -115,7 +167,7 @@ function renderTop(rows, title, fromServer = false) {
     return;
   }
   const medals = ['🥇', '🥈', '🥉'];
-  rows.slice(0, 3).forEach((player, i) => {
+  rows.slice(0, 10).forEach((player, i) => {
     const isOwner = fromServer && player.nickname === 'Virotos';
     const isGold = i === 0 && !isOwner; // админский стиль приоритетнее золота
     const li = document.createElement('li');
@@ -124,7 +176,7 @@ function renderTop(rows, title, fromServer = false) {
     const nickname = document.createElement('span');
     const points = document.createElement('span');
     medal.className = 'leaderboard-medal';
-    medal.textContent = medals[i];
+    medal.textContent = medals[i] || String(i + 1) + '.';
     name.className = 'leaderboard-name';
     nickname.className = 'leaderboard-nickname';
     nickname.textContent = player.nickname; // без HTML — безопасно для любых ников
@@ -176,7 +228,7 @@ async function loadTop() {
         serverOffset=data.serverNow-Date.now();
         updateTournamentCountdown();
       }
-      renderTop(data.top || [],tournamentId?(data.frozen?'Итоги турнира · рейтинг заморожен':'Турнирный зачёт · только текущий турнир'):'Общий топ-3 всех посетителей сайта',true);
+      renderTop(data.top || [],tournamentId?(data.frozen?'Итоги турнира · рейтинг заморожен':'Турнирный зачёт · только текущий турнир'):'Общий топ-10 всех посетителей сайта',true);
     } catch {
       renderTop([], tournamentId?'Не удалось получить турнирные результаты':'Общий рейтинг временно недоступен');
     }
@@ -265,6 +317,7 @@ async function start(event) {
   $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
   showMessage(mode==='tournament'?'Турнир начат. Результат нужно сохранить до окончания таймера!':mode==='global'?'Готово! Поехали за рекордом.':'Локальная партия. Для общего топа подключим Cloudflare.');
   refreshBoard();
+  if (shouldEnterFocus()) setFocusMode(true);
 }
 function move(direction) {
   if (!game || ended || submitting) return;
@@ -322,6 +375,7 @@ function newGame() {
   $('playerTag').classList.remove('player-tag--owner');
   $('score').textContent='0';
   showMessage('Введи ник и начни новую партию.');
+  if (focusMode) setFocusMode(false);
   $('nickname').focus();
 }
 
@@ -395,14 +449,32 @@ function init() {
     const dir=directionKeys[e.key];
     if (dir && game && !ended) {e.preventDefault();move(dir);}
   });
+  // Capture only primary pointers; touch-action:none disables browser scroll
+  // when dragging inside the board. Pointer capture keeps swipes at board edges.
   let touchStart=null;
-  $('board').addEventListener('pointerdown',e=> { touchStart={x:e.clientX,y:e.clientY}; });
-  $('board').addEventListener('pointerup',e=>{
-    if (!touchStart) return;
+  const board=$('board');
+  board.addEventListener('pointerdown',e=> {
+    if (!e.isPrimary || (e.pointerType==='mouse' && e.button!==0)) return;
+    touchStart={x:e.clientX,y:e.clientY,id:e.pointerId};
+    try {board.setPointerCapture(e.pointerId);} catch (_) {}
+  });
+  board.addEventListener('pointermove',e=>{
+    if (touchStart?.id === e.pointerId && e.cancelable) e.preventDefault();
+  },{passive:false});
+  board.addEventListener('pointerup',e=>{
+    if (!touchStart || e.pointerId!==touchStart.id) return;
     const dx=e.clientX-touchStart.x, dy=e.clientY-touchStart.y;
     touchStart=null;
-    if (Math.max(Math.abs(dx),Math.abs(dy))<25) return;
+    if (Math.max(Math.abs(dx),Math.abs(dy))<18) return;
     move(Math.abs(dx)>Math.abs(dy) ? (dx>0?'R':'L') : (dy>0?'D':'U'));
+  });
+  board.addEventListener('pointercancel',()=>{touchStart=null;});
+  // On iOS WebViews TouchEvents may still trigger scroll without this guard.
+  board.addEventListener('touchmove',e=>{if(e.cancelable)e.preventDefault();},{passive:false});
+  $('focusButton').addEventListener('click',()=>setFocusMode(true,true));
+  $('exitFocusButton').addEventListener('click',()=>setFocusMode(false));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && focusMode){setFocusMode(false);e.preventDefault();}
   });
   $('tgLoginButton').addEventListener('click',()=>void loginViaTelegram());
   $('shareButton').addEventListener('click',async()=>{
