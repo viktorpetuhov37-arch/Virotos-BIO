@@ -1,0 +1,279 @@
+/*
+  VIROTOS ARCADE / Dual palette skin v1
+  Loaded AFTER virotos3.css. Purely visual: does not touch score logic,
+  board markup, the focus-mode script, Telegram authentication or leaderboards.
+  All sizes and layout rules are identical in both themes.
+*/
+:root, :root[data-theme="dark"] {
+  --arc-bg-top: #221738;
+  --arc-bg-bottom: #14192e;
+  --arc-surface: #1b2035;
+  --arc-surface-end: #221b3b;
+  --arc-surface-soft: #24233f;
+  --arc-raised: #2a284b;
+  --arc-board-top: #333052;
+  --arc-board-bottom: #262540;
+  --arc-empty: #ffffff0d;
+  --arc-ink: #f5f0ff;
+  --arc-muted: #c2b9d8;
+  --arc-edge: #b4a4ee35;
+  --arc-edge-strong: #b7a0f17d;
+  --arc-primary: #ab8aff;
+  --arc-primary-ink: #16132c;
+  --arc-accent: #c39aff;
+  --arc-glow: #a477ff31;
+  --arc-shadow: 0 18px 48px #05061836;
+  --arc-score: #c8aeff;
+  --arc-tile2: #d6d6ff;
+  --arc-tile4: #afbaff;
+  --arc-tile8: #8d97f5;
+  --arc-tile16: #7765d8;
+  --arc-tile32: #8658c6;
+  --arc-tile64: #b44fae;
+  --arc-tile128: #7d55db;
+  --arc-tile256: #6744bb;
+  --arc-tile512: #aa52d0;
+  --arc-tile1024: #dc69c0;
+  --arc-tile-big: linear-gradient(130deg,#a68cff 5%,#d883ef 55%,#83b4ff 100%);
+  --arc-game-ink: #ffffff;
+  --arc-tile-ink: #171333;
+  --arc-tile-sheen: #ffffff20;
+  --arc-best-highlight: #d6bdff;
+}
+:root[data-theme="light"] {
+  --arc-bg-top: #fff2dd;
+  --arc-bg-bottom: #f6dfc9;
+  --arc-surface: #fffaf3;
+  --arc-surface-end: #fff0df;
+  --arc-surface-soft: #fff1de;
+  --arc-raised: #fae4cb;
+  --arc-board-top: #efd5b6;
+  --arc-board-bottom: #e9caaa;
+  --arc-empty: #fffaf06b;
+  --arc-ink: #402b24;
+  --arc-muted: #806357;
+  --arc-edge: #b9825842;
+  --arc-edge-strong: #ae745c91;
+  --arc-primary: #ba765d;
+  --arc-primary-ink: #fffaf5;
+  --arc-accent: #a96344;
+  --arc-glow: #ddaa8140;
+  --arc-shadow: 0 16px 42px #8e5b3620;
+  --arc-score: #944e39;
+  --arc-tile2: #fff3cc;
+  --arc-tile4: #ffe5ad;
+  --arc-tile8: #ffcc9c;
+  --arc-tile16: #ffb395;
+  --arc-tile32: #f99784;
+  --arc-tile64: #e77669;
+  --arc-tile128: #de9570;
+  --arc-tile256: #cf775d;
+  --arc-tile512: #c76165;
+  --arc-tile1024: #c05f75;
+  --arc-tile-big: linear-gradient(130deg,#f3b96b 5%,#ef907c 55%,#d980a1 100%);
+  --arc-game-ink: #fffaf4;
+  --arc-tile-ink: #513324;
+  --arc-tile-sheen: #fffdfa4d;
+  --arc-best-highlight: #ffe3b0;
+}
+
+/* Surroundings: the game feels like its own piece of Virotos, not a generic grid. */
+.game-page .game-hero {
+  background: radial-gradient(circle at 88% 7%,var(--arc-glow),transparent 40%),
+              linear-gradient(125deg,var(--arc-bg-top),var(--arc-bg-bottom));
+  border-color:var(--arc-edge);
+  box-shadow:var(--arc-shadow);
+}
+.game-page .game-hero::before { border-color:var(--arc-edge-strong); }
+.game-page .game-hero h1 span {color:var(--arc-primary);}
+.game-page .game-hero .eyebrow,.game-page .small-caption {color:var(--arc-accent);}
+.game-page .game-hero p {color:var(--arc-muted);}
+.game-page .game-panel,.game-page .leaderboard-panel {
+  background:linear-gradient(153deg,var(--arc-surface),var(--arc-surface-end));
+  border-color:var(--arc-edge);
+  box-shadow:var(--arc-shadow);
+}
+.game-page .game-panel-heading h2,.game-page .leaderboard-heading h2 {color:var(--arc-ink);}
+.game-page .player-tag {
+  background:var(--arc-surface-soft);
+  border-color:var(--arc-edge);
+  color:var(--arc-ink);
+}
+.game-page .game-panel .stat {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:var(--arc-surface-soft);
+  color:var(--arc-ink);
+  box-shadow:inset 0 0 0 1px var(--arc-edge);
+}
+.game-page .game-panel .stat::before {
+  content:"";
+  position:absolute;
+  width:34px;height:34px;
+  border:1px solid var(--arc-edge-strong);
+  border-radius:50%;
+  right:-9px;top:-12px;
+  pointer-events:none;
+  opacity:.6;
+}
+.game-page .stat span {color:var(--arc-muted);}
+.game-page .stat strong {letter-spacing:-.02em;}
+.game-page .game-stats .stat:first-child strong {color:var(--arc-score);}
+.game-page .game-stats .stat:nth-child(2) strong {color:var(--arc-ink);}
+
+/* Preserve equal-width columns AND explicitly equal-height rows (grid fix). */
+.game-page .game-board {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-rows:repeat(4,minmax(0,1fr));
+  background:linear-gradient(155deg,var(--arc-board-top),var(--arc-board-bottom));
+  border:1px solid var(--arc-edge);
+  box-shadow:0 14px 28px var(--arc-glow),inset 0 2px 8px #0000000b;
+  border-radius:22px;
+}
+.game-page .game-board .tile {
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+  border-radius:clamp(8px,1vw,13px);
+  background:var(--arc-empty);
+  color:var(--arc-tile-ink);
+  box-shadow:inset 0 1px 0 var(--arc-tile-sheen);
+  font-weight:850;
+  letter-spacing:-.035em;
+  line-height:1;
+  text-shadow:none;
+}
+.game-page .game-board .tile[data-value="0"] {background:var(--arc-empty);box-shadow:none;}
+.game-page .game-board .tile[data-value="2"] {background:var(--arc-tile2);color:var(--arc-tile-ink);}
+.game-page .game-board .tile[data-value="4"] {background:var(--arc-tile4);color:var(--arc-tile-ink);}
+.game-page .game-board .tile[data-value="8"] {background:var(--arc-tile8);color:var(--arc-tile-ink);}
+.game-page .game-board .tile[data-value="16"] {background:var(--arc-tile16);color:var(--arc-game-ink);}
+.game-page .game-board .tile[data-value="32"] {background:var(--arc-tile32);color:var(--arc-game-ink);}
+.game-page .game-board .tile[data-value="64"] {background:var(--arc-tile64);color:var(--arc-game-ink);}
+.game-page .game-board .tile[data-value="128"] {background:var(--arc-tile128);color:var(--arc-game-ink);}
+.game-page .game-board .tile[data-value="256"] {background:var(--arc-tile256);color:var(--arc-game-ink);}
+.game-page .game-board .tile[data-value="512"] {background:var(--arc-tile512);color:var(--arc-game-ink);}
+.game-page .game-board .tile[data-value="1024"] {background:var(--arc-tile1024);color:var(--arc-game-ink);}
+.game-page .game-board .tile[data-value="2048"],
+.game-page .game-board .tile[data-super="true"] {
+  background:var(--arc-tile-big);
+  color:var(--arc-tile-ink);
+  box-shadow:inset 0 0 0 2px var(--arc-tile-sheen),0 0 17px var(--arc-glow);
+}
+:root[data-theme="light"] .game-page .game-board .tile[data-value="16"],
+:root[data-theme="light"] .game-page .game-board .tile[data-value="32"] {
+  color:#593325;
+}
+:root[data-theme="dark"] .game-page .game-board .tile[data-value="8"] {color:#171333;}
+
+/* Native page controls: no new markup or button handlers required. */
+.game-page .game-nav a,.game-page .game-nav button,
+.game-page .arcade-mode,.game-page .game-focus-button,
+.game-page .game-focus-exit,.game-page .game-actions button,
+.game-page .game-dpad button,.game-page .leaderboard-heading button {
+  background:var(--arc-surface-soft);
+  border-color:var(--arc-edge);
+  color:var(--arc-ink);
+  box-shadow:none;
+}
+.game-page .game-nav a:hover,.game-page .game-nav button:hover,
+.game-page .arcade-mode:hover,.game-page .game-focus-button:hover,
+.game-page .game-actions button:hover:not(:disabled),.game-page .game-dpad button:active {
+  background:var(--arc-raised);
+  border-color:var(--arc-edge-strong);
+}
+.game-page .arcade-mode--active {
+  background:var(--arc-primary)!important;
+  color:var(--arc-primary-ink)!important;
+  border-color:var(--arc-primary)!important;
+}
+.game-page .game-actions #finishButton:not(:disabled) {
+  background:var(--arc-primary);
+  color:var(--arc-primary-ink);
+  border-color:var(--arc-primary);
+}
+.game-page .game-actions #finishButton:not(:disabled):hover {filter:brightness(1.07);}
+.game-page .game-message,.game-page .game-mobile-hint,
+.game-page .game-footnote,.game-page .leaderboard-status,
+.game-page .leaderboard-explainer {color:var(--arc-muted);}
+.game-page .leaderboard li,.game-page .leaderboard li:nth-child(n+4) {
+  background:var(--arc-surface-soft);
+  color:var(--arc-ink);
+  border-color:var(--arc-edge);
+}
+.game-page .leaderboard li:first-child {
+  background:linear-gradient(110deg,var(--arc-surface-soft),var(--arc-raised));
+  border-color:var(--arc-edge-strong);
+}
+.game-page .leaderboard li:nth-child(2),.game-page .leaderboard li:nth-child(3) {border-color:var(--arc-edge-strong);}
+.game-page .leaderboard li.leaderboard-row--owner {
+  border-color:#dc7f9a9c;
+  background:linear-gradient(115deg,rgba(201,74,113,.12),var(--arc-surface-soft));
+}
+/* The shared OWNER shimmer is too pale on cream: deepen it without changing rank rules. */
+:root[data-theme="light"] .game-page .leaderboard-nickname--owner {
+  color:#962e52;
+  background:linear-gradient(105deg,#862646 0%,#b64d6a 30%,#80466f 59%,#a52e5b 82%,#862646 100%);
+  background-size:250% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:none;
+}
+.game-page .leaderboard-points {color:var(--arc-accent);}
+.game-page .leaderboard-empty {border-color:var(--arc-edge);color:var(--arc-muted);}
+.game-page .record-hint {
+  background:var(--arc-surface-soft);
+  color:var(--arc-muted);
+  border-color:var(--arc-edge);
+}
+
+/* Start overlay stays high-contrast even if game is waiting for sign-in. */
+.game-page .game-overlay {
+  color:var(--arc-ink);
+  background:color-mix(in srgb,var(--arc-surface) 96%,transparent);
+  border:1px solid var(--arc-edge);
+}
+.game-page .game-start-form h3 {color:var(--arc-ink);}
+.game-page .overlay-symbol {color:var(--arc-primary);}
+.game-page .game-start-form p,
+.game-page .game-start-form label,
+.game-page .owner-code-hint {color:var(--arc-muted);}
+.game-page .game-start-form input {
+  background:var(--arc-surface-soft);
+  color:var(--arc-ink);
+  border-color:var(--arc-edge-strong);
+}
+.game-page .game-start-form input:focus {
+  border-color:var(--arc-primary);
+  box-shadow:0 0 0 3px var(--arc-glow);
+}
+.game-page .game-start-form .accent-button {
+  background:var(--arc-primary)!important;
+  border-color:var(--arc-primary)!important;
+  color:var(--arc-primary-ink)!important;
+}
+.game-page .tg-auth-panel {background:var(--arc-surface-soft);border-color:var(--arc-edge-strong);color:var(--arc-ink);}
+.game-page .tg-auth-panel p,.game-page .tg-auth-panel strong {color:var(--arc-ink);}
+.game-page .tg-auth-button {background:var(--arc-primary)!important;border-color:var(--arc-primary)!important;color:var(--arc-primary-ink)!important;}
+.game-page .tournament-play-note {background:var(--arc-surface);border-color:var(--arc-edge-strong);color:var(--arc-ink);}
+.game-page .tournament-play-note span {color:var(--arc-muted);}
+.game-page .tournament-play-note a,.game-page .tournament-countdown {color:var(--arc-accent);}
+.game-page .game-focus-exit {background:var(--arc-raised);}
+
+/* Fullscreen mobile focus: keep its fixed layout and preserve square tiles. */
+body.arcade-focus .game-page .game-panel {
+  background:linear-gradient(165deg,var(--arc-surface),var(--arc-bg-bottom));
+  box-shadow:none;
+}
+body.arcade-focus .game-page .game-overlay {
+  background:color-mix(in srgb,var(--arc-surface) 97%,transparent);
+}
+@media(max-width:420px) {
+  .game-page .game-board {border-radius:17px;}
+  .game-page .game-board .tile {border-radius:8px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .game-page .game-board .tile {transition:none;}
+}
