@@ -57,7 +57,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     });
   }
   // 0.6: public seller-managed catalog, independent of Telegram login.
-  let catalogItems=[],catalogFilter='all';
+  let catalogItems=[],catalogFilter='all',ordersOpen=true;
   function renderCatalog(){
     const root=$('rwCatalogItems');if(!root)return;
     root.replaceChildren();
@@ -77,7 +77,8 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       const price=document.createElement('span');price.className='rw-catalog-price';price.textContent=Number(g.priceRub).toLocaleString('ru-RU')+' ₽';
       const state=document.createElement('small');state.className='rw-catalog-state rw-catalog-'+g.status;state.textContent=statuses[g.status]||g.status;
       const btn=document.createElement('button');btn.className='shop-primary-button';btn.type='button';
-      const enabled=g.status==='available';btn.disabled=!enabled;btn.textContent=enabled?'Заказать · тест':g.status==='preorder'?'Уточнить наличие':'Недоступно';
+      const enabled=g.status==='available'&&ordersOpen;btn.disabled=!enabled;btn.textContent=
+        g.status==='available'&&!ordersOpen?'Приём заказов на паузе':enabled?'Заказать · тест':g.status==='preorder'?'Уточнить наличие':'Недоступно';
       if(g.status==='preorder'){
         btn.disabled=false;btn.className='shop-outline-button';
         btn.addEventListener('click',()=>window.open('https://t.me/Virotos_bot?start=customgift_'+g.id,'_blank','noopener,noreferrer'));
@@ -94,7 +95,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   }
   async function loadCatalog(){
     if(!$('rwCatalogItems'))return;
-    try{const result=await call('/api/rewards/gifts/catalog');catalogItems=Array.isArray(result.items)?result.items:[];renderCatalog();}
+    try{const result=await call('/api/rewards/gifts/catalog');catalogItems=Array.isArray(result.items)?result.items:[];ordersOpen=result.ordersOpen!==false;renderCatalog();}
     catch(e){const root=$('rwCatalogItems');if(root)root.textContent='Не удалось загрузить каталог: '+e.message;}
   }
   document.querySelectorAll('[data-catalog-filter]').forEach(button=>button.addEventListener('click',()=>{
