@@ -57,6 +57,53 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       card.append(info,ctrl);list.append(card);
     });
   }
+  // 0.6: public seller-managed catalog, independent of Telegram login.
+  let catalogItems=[],catalogFilter='all';
+  function renderCatalog(){
+    const root=$('rwCatalogItems');if(!root)return;
+    root.replaceChildren();
+    const list=catalogItems.filter(g=>catalogFilter==='all'||g.status===catalogFilter);
+    if(!list.length){const p=document.createElement('p');p.className='rw-empty';p.textContent='В этой категории пока нет подарков.';root.append(p);return;}
+    const statuses={available:'В наличии',reserved:'Зарезервирован',preorder:'Под заказ',unavailable:'Нет в наличии'};
+    for(const g of list){
+      const card=document.createElement('article');card.className='rw-catalog-card';
+      const art=document.createElement('div');art.className='rw-catalog-art';
+      if(g.hasPhoto){
+        const image=document.createElement('img');image.loading='lazy';image.alt='Фото: '+g.title;
+        image.src=API+'/api/rewards/gifts/photo/'+g.id;
+        image.addEventListener('error',()=>{image.remove();art.textContent='🎁';},{once:true});art.append(image);
+      }else art.textContent='🎁';
+      const main=document.createElement('div');main.className='rw-catalog-info';
+      const name=document.createElement('strong');name.textContent=g.title;
+      const price=document.createElement('span');price.className='rw-catalog-price';price.textContent=Number(g.priceRub).toLocaleString('ru-RU')+' ₽';
+      const state=document.createElement('small');state.className='rw-catalog-state rw-catalog-'+g.status;state.textContent=statuses[g.status]||g.status;
+      const btn=document.createElement('button');btn.className='shop-primary-button';btn.type='button';
+      const enabled=g.status==='available';btn.disabled=!enabled;btn.textContent=enabled?'Заказать · тест':g.status==='preorder'?'Уточнить наличие':'Недоступно';
+      if(g.status==='preorder'){
+        btn.disabled=false;btn.className='shop-outline-button';
+        btn.addEventListener('click',()=>{const input=$('rwGiftDescription');if(input){input.value='Хочу узнать о подарке: '+g.title;input.focus();input.scrollIntoView({behavior:'smooth',block:'center'});}});
+      }
+      if(enabled)btn.addEventListener('click',async()=>{
+        if(!token){notice('Войди через Telegram, чтобы создать тестовую заявку.');$('rwLogin')?.focus();return;}
+        if(!confirm('Создать тестовую заявку на '+g.title+'? Оплата и резервирование не происходят.'))return;
+        btn.disabled=true;
+        try{const res=await call('/api/rewards/gift-order-test',{method:'POST',data:{catalogId:g.id}});await reload();notice('Тестовая заявка '+res.orderId+' создана.');}
+        catch(e){notice(e.message);await loadCatalog();}finally{btn.disabled=false;}
+      });
+      main.append(name,price,state,btn);card.append(art,main);root.append(card);
+    }
+  }
+  async function loadCatalog(){
+    if(!$('rwCatalogItems'))return;
+    try{const result=await call('/api/rewards/gifts/catalog');catalogItems=Array.isArray(result.items)?result.items:[];renderCatalog();}
+    catch(e){const root=$('rwCatalogItems');if(root)root.textContent='Не удалось загрузить каталог: '+e.message;}
+  }
+  document.querySelectorAll('[data-catalog-filter]').forEach(button=>button.addEventListener('click',()=>{
+    catalogFilter=button.dataset.catalogFilter;
+    document.querySelectorAll('[data-catalog-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+    renderCatalog();
+  }));
+  $('rwCatalogRefresh')?.addEventListener('click',()=>void loadCatalog());
   const GIFT_STAGES={new:'Ожидает продавца',accepted:'Принята продавцом',quoted:'Цена предложена',confirmed:'Цена согласована',paid:'Оплата отмечена (тест)',delivered:'Передача отмечена (тест)',cancelled:'Отменена'};
   function renderGiftOrders(orders,rootId='rwGiftOrders',append=false){
     const el=$(rootId);if(!el)return;
@@ -286,6 +333,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
 
   $('rwCheckReferral')?.addEventListener('click',()=>void reload());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&token)void reload();});
+  void loadCatalog();
   void reload();
   if(!token){const pending=readPendingAuth();if(pending)void pollPendingLogin(pending);}
 })();

@@ -27,3 +27,23 @@
 .rw-gift-history .rw-gift-orders{margin:12px 0}
 .rw-gift-history #rwGiftHistoryMore{margin-top:8px}
 @media(max-width:420px){.rw-gift-history{padding:12px}.rw-gift-history__hint{display:block;margin:2px 0 0}}
+
+/* Virotos Rewards 0.6 — catalog cards, mobile-first and theme-neutral. */
+.rw-catalog-section .shop-panel{overflow:hidden}
+.rw-catalog-note{color:var(--v-muted);font-size:13px;line-height:1.5;margin:0 0 14px}
+.rw-catalog-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 18px}
+.rw-catalog-tabs button{padding:9px 13px;border:1px solid var(--v-border-strong);border-radius:50px;background:var(--v-elevated);color:var(--v-ink);font:inherit;font-size:13px;cursor:pointer}
+.rw-catalog-tabs button[aria-pressed="true"]{background:var(--v-accent);color:var(--v-bg);border-color:var(--v-accent);font-weight:700}
+.rw-catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,225px),1fr));gap:14px}
+.rw-catalog-card{min-width:0;border:1px solid var(--v-border);border-radius:18px;padding:10px;background:var(--v-surface-2);display:flex;flex-direction:column;gap:10px}
+.rw-catalog-art{height:190px;border-radius:13px;background:var(--v-elevated);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:42px}
+.rw-catalog-art img{height:100%;width:100%;display:block;object-fit:contain}
+.rw-catalog-info{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rw-catalog-info strong{font-size:16px;line-height:1.45;overflow-wrap:anywhere}
+.rw-catalog-price{font-weight:750;font-size:18px}
+.rw-catalog-state{color:var(--v-muted);font-size:12px}
+.rw-catalog-available{color:var(--v-accent)}
+.rw-catalog-info button{width:100%;min-height:42px;font-size:13px;margin-top:6px}
+.rw-catalog-info button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:520px){.rw-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.rw-catalog-card{padding:7px;border-radius:13px}.rw-catalog-art{height:clamp(115px,35vw,170px)}.rw-catalog-info strong{font-size:13px}.rw-catalog-price{font-size:15px}.rw-catalog-info button{padding:8px 6px}}
+@media(max-width:335px){.rw-catalog-grid{grid-template-columns:1fr}}
