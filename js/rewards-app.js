@@ -7,6 +7,9 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   const KEY=AUTH_STORAGE_KEY;
   let token=readAuthToken();
   let activePolling=false;
+  let giftHistoryCursor=null;
+  let giftHistoryLoaded=false;
+  let giftHistoryLoading=false;
   const $=id=>document.getElementById(id);
   const notice=(text)=>{const el=$('rwStatus');if(el)el.textContent=text;};
   async function call(path,options={}) {
@@ -55,10 +58,10 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     });
   }
   const GIFT_STAGES={new:'Ожидает продавца',accepted:'Принята продавцом',quoted:'Цена предложена',confirmed:'Цена согласована',paid:'Оплата отмечена (тест)',delivered:'Передача отмечена (тест)',cancelled:'Отменена'};
-  function renderGiftOrders(orders){
-    const el=$('rwGiftOrders');if(!el)return;
-    el.replaceChildren();
-    if(!orders.length){const p=document.createElement('p');p.className='rw-empty';p.textContent='Заявок пока нет.';el.append(p);return;}
+  function renderGiftOrders(orders,rootId='rwGiftOrders',append=false){
+    const el=$(rootId);if(!el)return;
+    if(!append)el.replaceChildren();
+    if(!orders.length&&!append){const p=document.createElement('p');p.className='rw-empty';p.textContent=rootId==='rwGiftOrders'?'Активных заказов пока нет.':'В истории пока пусто.';el.append(p);return;}
     orders.forEach(o=>{
       const card=document.createElement('article');card.className='rw-gift-order';
       const top=document.createElement('div');top.className='rw-gift-order__top';
@@ -96,14 +99,30 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       card.append(top,detail,actions);el.append(card);
     });
   }
-  async function reload() {
-    if(!token){setLogged(false);renderPromo([]);renderGiftOrders([]);if($('rwReferralState'))$('rwReferralState').textContent='Войди через Telegram, чтобы проверить заявки.';if($('rwReferralLink'))$('rwReferralLink').hidden=true;if($('rwCancelReferral'))$('rwCancelReferral').hidden=true;document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';notice('Войди через Telegram, чтобы открыть кошелёк и промокоды.');return;}
+  async function loadGiftHistory(reset=false){
+    const section=$('rwGiftHistoryDetails');if(!section||!section.open||giftHistoryLoading||!token)return;
+    giftHistoryLoading=true;
+    const more=$('rwGiftHistoryMore');if(more)more.disabled=true;
+    try{
+      if(reset){giftHistoryCursor=null;giftHistoryLoaded=false;}
+      const path='/api/rewards/gift-history'+(giftHistoryCursor?'?cursor='+encodeURIComponent(giftHistoryCursor):'');
+      const result=await call(path);
+      renderGiftOrders(result.orders||[],'rwGiftHistory',giftHistoryLoaded);
+      giftHistoryLoaded=true;
+      giftHistoryCursor=result.nextCursor||null;
+      if(more){more.hidden=!giftHistoryCursor;more.disabled=false;}
+    }catch(e){notice('Не удалось загрузить историю: '+e.message);if(more)more.disabled=false;}
+    finally{giftHistoryLoading=false;}
+  }
+    async function reload() {
+    if(!token){setLogged(false);renderPromo([]);renderGiftOrders([]);giftHistoryCursor=null;giftHistoryLoaded=false;if($('rwGiftHistory'))$('rwGiftHistory').replaceChildren();if($('rwReferralState'))$('rwReferralState').textContent='Войди через Telegram, чтобы проверить заявки.';if($('rwReferralLink'))$('rwReferralLink').hidden=true;if($('rwCancelReferral'))$('rwCancelReferral').hidden=true;document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';notice('Войди через Telegram, чтобы открыть кошелёк и промокоды.');return;}
     try {
       const profile=await call('/api/rewards/me');
       setLogged(true,profile.player);notice('Telegram подтверждён');
       if($('rwBalance'))$('rwBalance').textContent=Number(profile.balanceVP).toLocaleString('ru-RU');
       renderPromo(profile.promos||[]);
       renderGiftOrders(profile.giftOrders||[]);
+      if($('rwGiftHistoryDetails')?.open)await loadGiftHistory(true);
       document.querySelectorAll('[data-buy-discount]').forEach(button=>{
         const cost=Number(button.dataset.costVp);
         button.disabled=!profile.partnerReady||!Number.isFinite(cost)||Number(profile.balanceVP)<cost;
@@ -131,7 +150,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
         }
       }
     }catch(e){
-      if(e.status===401){token='';clearAuthToken();setLogged(false);renderPromo([]);renderGiftOrders([]);document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';}
+      if(e.status===401){token='';clearAuthToken();setLogged(false);renderPromo([]);renderGiftOrders([]);giftHistoryLoaded=false;giftHistoryCursor=null;if($('rwGiftHistory'))$('rwGiftHistory').replaceChildren();document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';}
       notice(e.message);
     }
   }
@@ -218,6 +237,10 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     finally{if(button)button.disabled=false;}
   });
   $('rwGiftRefresh')?.addEventListener('click',()=>void reload());
+  $('rwGiftHistoryDetails')?.addEventListener('toggle',event=>{
+    if(event.target.open && !giftHistoryLoaded)void loadGiftHistory(true);
+  });
+  $('rwGiftHistoryMore')?.addEventListener('click',()=>void loadGiftHistory());
   const links={reviews:'https://t.me/viktor_l1fe',seller:'https://t.me/Virotos',bot:'https://t.me/Virotos_bot?start=rewards'};
   document.querySelectorAll('[data-rewards-target]').forEach(a=>{const key=a.dataset.rewardsTarget;if(links[key])a.href=links[key];});
   const year=$('year');if(year)year.textContent=new Date().getFullYear();
@@ -235,6 +258,8 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   window.addEventListener('storage',event=>{
     if(event.key!==KEY)return;
     token=readAuthToken();
+    giftHistoryLoaded=false;giftHistoryCursor=null;
+    if($('rwGiftHistory'))$('rwGiftHistory').replaceChildren();
     activePolling=false;
     void reload();
   });

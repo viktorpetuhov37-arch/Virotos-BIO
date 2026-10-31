@@ -19,3 +19,11 @@
 .rw-legacy-tests summary{cursor:pointer;color:var(--v-muted);font-weight:650;list-style-position:inside;line-height:1.55}
 .rw-legacy-inner{padding-top:14px}
 .rw-legacy-inner h3{font-size:16px;margin:0 0 8px;letter-spacing:0}
+
+/* 0.5.3 — archived orders are hidden until the user opens history. */
+.rw-gift-history{margin-top:16px;border:1px solid var(--v-border);border-radius:14px;padding:12px 14px;background:var(--v-surface-2)}
+.rw-gift-history summary{cursor:pointer;line-height:1.5;font-size:14px;font-weight:700;color:var(--v-ink)}
+.rw-gift-history__hint{display:inline-block;margin-left:6px;font-size:12px;font-weight:400;color:var(--v-muted)}
+.rw-gift-history .rw-gift-orders{margin:12px 0}
+.rw-gift-history #rwGiftHistoryMore{margin-top:8px}
+@media(max-width:420px){.rw-gift-history{padding:12px}.rw-gift-history__hint{display:block;margin:2px 0 0}}
