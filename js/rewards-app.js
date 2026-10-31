@@ -22,6 +22,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     if($('rwAccount'))$('rwAccount').textContent=logged?player:'Аккаунт не подключён';
     if($('rwCreateCode'))$('rwCreateCode').disabled=!logged;
     if($('rwCreateReferral'))$('rwCreateReferral').disabled=!logged;
+    if($('rwGiftCreate'))$('rwGiftCreate').disabled=!logged;
   }
   const formatTime=stamp=>new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(Number(stamp)));
   function renderPromo(items){
@@ -53,13 +54,47 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       card.append(info,ctrl);list.append(card);
     });
   }
+  const GIFT_STAGES={new:'Ожидает продавца',accepted:'Принята продавцом',quoted:'Цена предложена',confirmed:'Цена согласована',paid:'Оплата отмечена (тест)',delivered:'Передача отмечена (тест)',cancelled:'Отменена'};
+  function renderGiftOrders(orders){
+    const el=$('rwGiftOrders');if(!el)return;
+    el.replaceChildren();
+    if(!orders.length){const p=document.createElement('p');p.className='rw-empty';p.textContent='Заявок пока нет.';el.append(p);return;}
+    orders.forEach(o=>{
+      const card=document.createElement('article');card.className='rw-gift-order';
+      const top=document.createElement('div');top.className='rw-gift-order__top';
+      const name=document.createElement('strong');name.textContent=o.description;
+      const tag=document.createElement('span');tag.className='shop-pill';tag.textContent=GIFT_STAGES[o.status]||o.status;
+      top.append(name,tag);
+      const detail=document.createElement('small');detail.textContent='№ '+o.id+(o.priceRub?' · '+o.priceRub+' ₽':'')+' · только тест';
+      const actions=document.createElement('div');actions.className='rw-actions';
+      const open=document.createElement('a');open.className='shop-outline-button';open.textContent='Открыть в боте ↗';open.href='https://t.me/Virotos_bot?start=order_'+o.id;open.target='_blank';open.rel='noopener noreferrer';actions.append(open);
+      if(o.status==='quoted'){
+        const btn=document.createElement('button');btn.type='button';btn.className='shop-primary-button';btn.textContent='Подтвердить цену';
+        btn.addEventListener('click',async()=>{
+          if(!confirm('Подтвердить цену '+o.priceRub+' ₽ для ТЕСТОВОГО заказа? Оплата не требуется.'))return;
+          btn.disabled=true;
+          try{await call('/api/rewards/gift-order-confirm',{method:'POST',data:{id:o.id}});await reload();notice('Тестовая цена подтверждена.');}catch(e){notice(e.message);btn.disabled=false;}
+        });actions.append(btn);
+      }
+      if(['new','accepted','quoted'].includes(o.status)){
+        const btn=document.createElement('button');btn.type='button';btn.className='shop-outline-button';btn.textContent='Отменить';
+        btn.addEventListener('click',async()=>{
+          if(!confirm('Отменить тестовый заказ '+o.id+'?'))return;
+          btn.disabled=true;
+          try{await call('/api/rewards/gift-order-cancel',{method:'POST',data:{id:o.id}});await reload();notice('Тестовый заказ отменён.');}catch(e){notice(e.message);btn.disabled=false;}
+        });actions.append(btn);
+      }
+      card.append(top,detail,actions);el.append(card);
+    });
+  }
   async function reload() {
-    if(!token){setLogged(false);renderPromo([]);if($('rwReferralState'))$('rwReferralState').textContent='Войди через Telegram, чтобы проверить заявки.';if($('rwReferralLink'))$('rwReferralLink').hidden=true;document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';notice('Войди через Telegram, чтобы открыть кошелёк и промокоды.');return;}
+    if(!token){setLogged(false);renderPromo([]);renderGiftOrders([]);if($('rwReferralState'))$('rwReferralState').textContent='Войди через Telegram, чтобы проверить заявки.';if($('rwReferralLink'))$('rwReferralLink').hidden=true;if($('rwCancelReferral'))$('rwCancelReferral').hidden=true;document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';notice('Войди через Telegram, чтобы открыть кошелёк и промокоды.');return;}
     try {
       const profile=await call('/api/rewards/me');
       setLogged(true,profile.player);notice('Telegram подтверждён');
       if($('rwBalance'))$('rwBalance').textContent=Number(profile.balanceVP).toLocaleString('ru-RU');
       renderPromo(profile.promos||[]);
+      renderGiftOrders(profile.giftOrders||[]);
       document.querySelectorAll('[data-buy-discount]').forEach(button=>{
         const cost=Number(button.dataset.costVp);
         button.disabled=!profile.partnerReady||!Number.isFinite(cost)||Number(profile.balanceVP)<cost;
@@ -73,7 +108,11 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
         referralState.textContent=!last?'Заявок пока нет.':
           (last.status==='awaiting_partner'?(last.accepted_at?'Принята продавцом · тестовый заказ № '+last.id:'Ожидает продавца · тестовая заявка № '+last.id):
           last.status==='test'?'Заявка № '+last.id+' создана. Подтверди переход в Telegram-боте.':
-          last.status==='completed'?'Тест заявки № '+last.id+' завершён. Покупки не было.':'Заявка № '+last.id+' отменена.');
+          last.status==='completed'?'Тест заявки № '+last.id+' завершён. Покупки не было.':
+          last.closed_reason==='expired'?'Срок заявки № '+last.id+' истёк.':'Заявка № '+last.id+' отменена.');
+        const cancelButton=$('rwCancelReferral');
+        const cancellable=!!last&&(last.status==='test'||last.status==='awaiting_partner'&&!last.accepted_at);
+        if(cancelButton){cancelButton.hidden=!cancellable;cancelButton.disabled=!cancellable;cancelButton.dataset.referralId=cancellable?last.id:'';}
         if(referralLink){
           if(last?.status==='test' && /^[a-f0-9]{20}$/.test(last.id)){
             referralLink.href='https://t.me/Virotos_bot?start=gift_'+last.id;
@@ -83,7 +122,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
         }
       }
     }catch(e){
-      if(e.status===401){token='';clearAuthToken();setLogged(false);renderPromo([]);document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';}
+      if(e.status===401){token='';clearAuthToken();setLogged(false);renderPromo([]);renderGiftOrders([]);document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';}
       notice(e.message);
     }
   }
@@ -156,6 +195,20 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       notice('Тестовая заявка создана. Открой бота для подтверждения.');
     }catch(e){notice(e.message);}finally{if(btn)btn.disabled=false;}
   }
+  $('rwGiftForm')?.addEventListener('submit',async(event)=>{
+    event.preventDefault();
+    const input=$('rwGiftDescription'),button=$('rwGiftCreate');
+    const description=String(input?.value||'').trim();
+    if(description.length<5||description.length>120){notice('Опиши подарок в 5–120 символах.');return;}
+    if(button)button.disabled=true;
+    try{
+      const response=await call('/api/rewards/gift-order-test',{method:'POST',data:{description}});
+      if(input)input.value='';
+      await reload();notice('Тестовая заявка '+response.orderId+' создана. Отправь /mygifts боту.');
+    }catch(e){notice(e.message);}
+    finally{if(button)button.disabled=false;}
+  });
+  $('rwGiftRefresh')?.addEventListener('click',()=>void reload());
   const links={reviews:'https://t.me/viktor_l1fe',seller:'https://t.me/Virotos',bot:'https://t.me/Virotos_bot?start=rewards'};
   document.querySelectorAll('[data-rewards-target]').forEach(a=>{const key=a.dataset.rewardsTarget;if(links[key])a.href=links[key];});
   const year=$('year');if(year)year.textContent=new Date().getFullYear();
@@ -189,6 +242,14 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   });
   $('rwCreateCode')?.addEventListener('click',newTestCode);
   $('rwCreateReferral')?.addEventListener('click',newReferral);
+  $('rwCancelReferral')?.addEventListener('click',async()=>{
+    const button=$('rwCancelReferral'),refId=button?.dataset.referralId;
+    if(!refId||!confirm('Отменить тестовую заявку '+refId+'?'))return;
+    button.disabled=true;
+    try{await call('/api/rewards/cancel-referral',{method:'POST',data:{id:refId}});await reload();notice('Заявка отменена.');}
+    catch(e){notice(e.message);await reload();}
+  });
+
   $('rwCheckReferral')?.addEventListener('click',()=>void reload());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&token)void reload();});
   void reload();
