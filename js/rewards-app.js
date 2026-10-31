@@ -76,8 +76,17 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
           try{await call('/api/rewards/gift-order-confirm',{method:'POST',data:{id:o.id}});await reload();notice('Тестовая цена подтверждена.');}catch(e){notice(e.message);btn.disabled=false;}
         });actions.append(btn);
       }
-      if(['new','accepted','quoted'].includes(o.status)){
-        const btn=document.createElement('button');btn.type='button';btn.className='shop-outline-button';btn.textContent='Отменить';
+      if(o.status==='quoted'){
+        const decline=document.createElement('button');decline.type='button';decline.className='shop-outline-button';decline.textContent='Отклонить цену';
+        decline.addEventListener('click',async()=>{
+          if(!confirm('Отклонить цену '+o.priceRub+' ₽? Продавец сможет предложить другую.'))return;
+          decline.disabled=true;
+          try{await call('/api/rewards/gift-order-decline',{method:'POST',data:{id:o.id}});await reload();notice('Цена отклонена. Ожидаем новое предложение продавца.');}
+          catch(e){notice(e.message);decline.disabled=false;}
+        });actions.append(decline);
+      }
+      if(['new','accepted','quoted','confirmed'].includes(o.status)){
+        const btn=document.createElement('button');btn.type='button';btn.className='shop-outline-button';btn.textContent='Отменить заказ';
         btn.addEventListener('click',async()=>{
           if(!confirm('Отменить тестовый заказ '+o.id+'?'))return;
           btn.disabled=true;
