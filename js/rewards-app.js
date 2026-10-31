@@ -54,7 +54,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     });
   }
   async function reload() {
-    if(!token){setLogged(false);renderPromo([]);document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';notice('Войди через Telegram, чтобы открыть кошелёк и промокоды.');return;}
+    if(!token){setLogged(false);renderPromo([]);if($('rwReferralState'))$('rwReferralState').textContent='Войди через Telegram, чтобы проверить заявки.';if($('rwReferralLink'))$('rwReferralLink').hidden=true;document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';notice('Войди через Telegram, чтобы открыть кошелёк и промокоды.');return;}
     try {
       const profile=await call('/api/rewards/me');
       setLogged(true,profile.player);notice('Telegram подтверждён');
@@ -63,10 +63,25 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       document.querySelectorAll('[data-buy-discount]').forEach(button=>{
         const cost=Number(button.dataset.costVp);
         button.disabled=!profile.partnerReady||!Number.isFinite(cost)||Number(profile.balanceVP)<cost;
-        button.title=!profile.partnerReady?'Продавец ещё не подключён':(button.disabled?'Недостаточно VP':'');
+        button.title=!profile.partnerReady?'Скидки пока недоступны':(button.disabled?'Недостаточно VP':'');
       });
-      if($('rwDiscountStatus'))$('rwDiscountStatus').textContent=profile.partnerReady?'Купоны доступны для покупки за VP. Согласуй цену с продавцом перед оплатой.':'Купоны откроются после подключения Telegram продавца.';
-      const referrals=$('rwReferralCount');if(referrals)referrals.textContent=String((profile.referrals||[]).length);
+      if($('rwDiscountStatus'))$('rwDiscountStatus').textContent=profile.partnerReady?'Скидки доступны за VP.':'Скидки пока недоступны.';
+      const referrals=profile.referrals||[];
+      const referralState=$('rwReferralState'), referralLink=$('rwReferralLink');
+      if(referralState){
+        const last=referrals[0];
+        referralState.textContent=!last?'Заявок пока нет.':
+          (last.status==='awaiting_partner'?'Переход через бота подтверждён.':
+          last.status==='test'?'Заявка создана. Открой Telegram-бота для подтверждения.':
+          last.status==='completed'?'Заявка завершена.':'Заявка отменена.');
+        if(referralLink){
+          if(last?.status==='test' && /^[a-f0-9]{20}$/.test(last.id)){
+            referralLink.href='https://t.me/Virotos_bot?start=gift_'+last.id;
+            referralLink.hidden=false;
+            referralLink.textContent='Подтвердить переход через бота ↗';
+          }else referralLink.hidden=true;
+        }
+      }
     }catch(e){
       if(e.status===401){token='';clearAuthToken();setLogged(false);renderPromo([]);document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';}
       notice(e.message);
@@ -137,7 +152,8 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     try{
       const result=await call('/api/rewards/referral-test',{method:'POST'});
       const link=$('rwReferralLink');if(link){link.href=result.botLink;link.hidden=false;link.textContent='Открыть бота с заявкой '+result.referral.slice(0,8)+' ↗';}
-      notice('Тестовая заявка создана. Подтверди переход через бота.');
+      await reload();
+      notice('Тестовая заявка создана. Открой бота для подтверждения.');
     }catch(e){notice(e.message);}finally{if(btn)btn.disabled=false;}
   }
   const links={reviews:'https://t.me/viktor_l1fe',seller:'https://t.me/Virotos',bot:'https://t.me/Virotos_bot?start=rewards'};
@@ -173,6 +189,8 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   });
   $('rwCreateCode')?.addEventListener('click',newTestCode);
   $('rwCreateReferral')?.addEventListener('click',newReferral);
+  $('rwCheckReferral')?.addEventListener('click',()=>void reload());
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&token)void reload();});
   void reload();
   if(!token){const pending=readPendingAuth();if(pending)void pollPendingLogin(pending);}
 })();
