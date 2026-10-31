@@ -54,3 +54,17 @@
 .rw-individual-request p{margin:0;color:var(--v-muted);font-size:13px;line-height:1.5;max-width:56ch}
 .rw-individual-request .shop-outline-button{display:inline-flex;text-decoration:none;align-items:center;justify-content:center;min-height:42px;white-space:nowrap}
 @media(max-width:520px){.rw-individual-request{align-items:stretch;gap:12px}.rw-individual-request .shop-outline-button{width:100%;white-space:normal;text-align:center}}
+
+/* 0.7 — test checkout; theme variables shared with the rest of Virotos. */
+.rw-checkout[hidden]{display:none!important}
+.rw-checkout{margin-top:20px;padding:18px;border:1px solid var(--v-border-strong);border-radius:16px;background:var(--v-surface-2);display:grid;gap:10px;min-width:0}
+.rw-checkout h3{font-size:clamp(18px,2.6vw,24px);line-height:1.3;letter-spacing:0;margin:0;color:var(--v-ink);overflow-wrap:anywhere}
+.rw-checkout p{margin:0;line-height:1.55}
+.rw-checkout label{font-weight:700;color:var(--v-ink)}
+.rw-checkout input{width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--v-border-strong);border-radius:12px;padding:12px 14px;background:var(--v-elevated);color:var(--v-ink);font:inherit}
+.rw-checkout input:focus-visible{outline:2px solid var(--v-accent);outline-offset:2px}
+.rw-checkout__hint{font-size:12px;color:var(--v-muted)}
+.rw-checkout__result{border:1px solid var(--v-border);border-radius:12px;padding:12px;background:var(--v-elevated);font-weight:650;overflow-wrap:anywhere}
+.rw-checkout .rw-actions{display:flex;flex-wrap:wrap;gap:9px}
+.rw-checkout .rw-actions button{min-height:42px}
+@media(max-width:520px){.rw-checkout{padding:12px}.rw-checkout .rw-actions button{flex:1 1 100%;width:100%}}

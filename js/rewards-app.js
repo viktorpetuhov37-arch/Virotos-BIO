@@ -57,7 +57,51 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     });
   }
   // 0.6: public seller-managed catalog, independent of Telegram login.
-  let catalogItems=[],catalogFilter='all',ordersOpen=true;
+  let catalogItems=[],catalogFilter='all',ordersOpen=true,checkoutGift=null,checkoutPreview=null,checkoutRequestId=null;
+  const fmtMoney=kop=>(Number(kop)/100).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';
+  function invalidateCheckout(){checkoutPreview=null;const submit=$('rwCheckoutSubmit');if(submit)submit.disabled=true;}
+  function chooseCatalogGift(g){
+    if(!token){notice('Для оформления теста войди через Telegram.');$('rwLogin')?.focus();return;}
+    checkoutGift=g;checkoutRequestId=crypto.randomUUID();invalidateCheckout();
+    const section=$('rwCheckout');if(!section)return;
+    $('rwCheckoutTitle').textContent=g.title;
+    $('rwCheckoutPrice').textContent=Number(g.priceRub).toLocaleString('ru-RU')+' ₽';
+    $('rwCheckoutPromo').value='';
+    $('rwCheckoutResult').textContent='Проверь стоимость и примени код, если нужен. Пока без оплаты.';
+    section.hidden=false;section.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  async function calculateCheckout(){
+    if(!checkoutGift)return;
+    const button=$('rwCheckoutCalculate');button.disabled=true;invalidateCheckout();
+    $('rwCheckoutResult').textContent='Проверяем цену и промокод на сервере…';
+    try{
+      const result=await call('/api/rewards/gift-order-preview',{method:'POST',data:{catalogId:checkoutGift.id,promoCode:$('rwCheckoutPromo').value}});
+      const q=result.quote;checkoutPreview=q;
+      $('rwCheckoutPrice').textContent=Number(q.priceRub).toLocaleString('ru-RU')+' ₽';
+      $('rwCheckoutResult').textContent='Скидка: '+fmtMoney(q.discountKopeks)+' · Итого: '+fmtMoney(q.totalKopeks)+
+        (q.promoCode?' · '+(q.demo?'демонстрационный код':'купон закрепляется за тестовым заказом, без погашения'):'')+
+        '. Тест: деньги и VP не списываются при оформлении заказа.';
+      $('rwCheckoutSubmit').disabled=false;
+    }catch(e){$('rwCheckoutResult').textContent=e.message;notice(e.message);}
+    finally{button.disabled=false;}
+  }
+  $('rwCheckoutPromo')?.addEventListener('input',()=>{
+    invalidateCheckout();if($('rwCheckoutResult'))$('rwCheckoutResult').textContent='Нажми «Рассчитать», чтобы увидеть точную стоимость.';
+  });
+  $('rwCheckoutCalculate')?.addEventListener('click',()=>void calculateCheckout());
+  $('rwCheckoutCancel')?.addEventListener('click',()=>{invalidateCheckout();checkoutGift=null;checkoutRequestId=null;$('rwCheckout').hidden=true;});
+  $('rwCheckoutSubmit')?.addEventListener('click',async()=>{
+    if(!checkoutGift||!checkoutPreview)return;
+    if(String($('rwCheckoutPromo').value||'').trim().toUpperCase()!==checkoutPreview.promoCode){invalidateCheckout();return;}
+    if(!confirm('Создать тестовый заказ «'+checkoutGift.title+'» на '+fmtMoney(checkoutPreview.totalKopeks)+'? Без оплаты и передачи подарка.'))return;
+    const button=$('rwCheckoutSubmit');button.disabled=true;
+    try{
+      const result=await call('/api/rewards/gift-order-test',{method:'POST',data:{catalogId:checkoutGift.id,promoCode:checkoutPreview.promoCode,
+        expectedPriceRub:checkoutPreview.priceRub,expectedDiscountKopeks:checkoutPreview.discountKopeks,requestId:checkoutRequestId}});
+      $('rwCheckout').hidden=true;checkoutGift=null;checkoutPreview=null;checkoutRequestId=null;
+      await reload();await loadCatalog();notice('Заказ '+result.orderId+' создан по фиксированной цене. Открой его в Telegram.');
+    }catch(e){invalidateCheckout();$('rwCheckoutResult').textContent=e.message;notice(e.message);await loadCatalog();}
+  });
   function renderCatalog(){
     const root=$('rwCatalogItems');if(!root)return;
     root.replaceChildren();
@@ -78,17 +122,13 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       const state=document.createElement('small');state.className='rw-catalog-state rw-catalog-'+g.status;state.textContent=statuses[g.status]||g.status;
       const btn=document.createElement('button');btn.className='shop-primary-button';btn.type='button';
       const enabled=g.status==='available'&&ordersOpen;btn.disabled=!enabled;btn.textContent=
-        g.status==='available'&&!ordersOpen?'Приём заказов на паузе':enabled?'Заказать · тест':g.status==='preorder'?'Уточнить наличие':'Недоступно';
+        g.status==='available'&&!ordersOpen?'Приём заказов на паузе':enabled?'Оформить · тест':g.status==='preorder'?'Уточнить наличие':'Недоступно';
       if(g.status==='preorder'){
         btn.disabled=false;btn.className='shop-outline-button';
         btn.addEventListener('click',()=>window.open('https://t.me/Virotos_bot?start=customgift_'+g.id,'_blank','noopener,noreferrer'));
       }
       if(enabled)btn.addEventListener('click',async()=>{
-        if(!token){notice('Войди через Telegram, чтобы создать тестовую заявку.');$('rwLogin')?.focus();return;}
-        if(!confirm('Создать тестовую заявку на '+g.title+'? Оплата и резервирование не происходят.'))return;
-        btn.disabled=true;
-        try{const res=await call('/api/rewards/gift-order-test',{method:'POST',data:{catalogId:g.id}});await reload();notice('Тестовая заявка '+res.orderId+' создана.');}
-        catch(e){notice(e.message);await loadCatalog();}finally{btn.disabled=false;}
+        chooseCatalogGift(g);
       });
       main.append(name,price,state,btn);card.append(art,main);root.append(card);
     }
@@ -115,10 +155,11 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       const name=document.createElement('strong');name.textContent=o.description;
       const tag=document.createElement('span');tag.className='shop-pill';tag.textContent=GIFT_STAGES[o.status]||o.status;
       top.append(name,tag);
-      const detail=document.createElement('small');detail.textContent='№ '+o.id+(o.priceRub?' · '+o.priceRub+' ₽':'')+' · только тест';
+      const detail=document.createElement('small');detail.textContent='№ '+o.id+(o.priceRub?' · '+o.priceRub.toLocaleString('ru-RU')+' ₽':'')+
+        (o.catalogFixed?' · Итого '+fmtMoney(o.totalKopeks)+(o.promoDiscountKopeks?' (−'+fmtMoney(o.promoDiscountKopeks)+')':''):'')+' · только тест';
       const actions=document.createElement('div');actions.className='rw-actions';
       const open=document.createElement('a');open.className='shop-outline-button';open.textContent='Открыть в боте ↗';open.href='https://t.me/Virotos_bot?start=order_'+o.id;open.target='_blank';open.rel='noopener noreferrer';actions.append(open);
-      if(o.status==='quoted'){
+      if(o.status==='quoted'&&!o.catalogFixed){
         const btn=document.createElement('button');btn.type='button';btn.className='shop-primary-button';btn.textContent='Подтвердить цену';
         btn.addEventListener('click',async()=>{
           if(!confirm('Подтвердить цену '+o.priceRub+' ₽ для ТЕСТОВОГО заказа? Оплата не требуется.'))return;
@@ -126,7 +167,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
           try{await call('/api/rewards/gift-order-confirm',{method:'POST',data:{id:o.id}});await reload();notice('Тестовая цена подтверждена.');}catch(e){notice(e.message);btn.disabled=false;}
         });actions.append(btn);
       }
-      if(o.status==='quoted'){
+      if(o.status==='quoted'&&!o.catalogFixed){
         const decline=document.createElement('button');decline.type='button';decline.className='shop-outline-button';decline.textContent='Отклонить цену';
         decline.addEventListener('click',async()=>{
           if(!confirm('Отклонить цену '+o.priceRub+' ₽? Продавец сможет предложить другую.'))return;
@@ -168,6 +209,14 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       setLogged(true,profile.player);notice('Telegram подтверждён');
       if($('rwBalance'))$('rwBalance').textContent=Number(profile.balanceVP).toLocaleString('ru-RU');
       renderPromo(profile.promos||[]);
+      const codeOptions=$('rwCheckoutPromoOptions');
+      if(codeOptions){codeOptions.replaceChildren();for(const p of profile.promos||[]){
+        if(p.status==='active'&&Number(p.expiresAt)>Date.now()){
+          const option=document.createElement('option');option.value=p.code;
+          option.label=p.kind==='test'?'Проверочный · 0 ₽':`Скидка ${p.discountPercent}% · до ${p.maxDiscountRub} ₽`;
+          codeOptions.append(option);
+        }
+      }}
       renderGiftOrders(profile.giftOrders||[]);
       if($('rwGiftHistoryDetails')?.open)await loadGiftHistory(true);
       document.querySelectorAll('[data-buy-discount]').forEach(button=>{
