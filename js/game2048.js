@@ -286,12 +286,13 @@ async function start(event) {
     $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
     return;
   }
-  let seed=freshSeed(), remoteId=null;
+  let seed=freshSeed(), remoteId=null, vpEligible=false;
   if (API) {
     try {
-      const data=await apiCall(tournamentId?tournamentRoute('start'):'/api/start', 'POST', {nickname:name, ...(reserved ? {ownerKey:candidateKey} : {}), ...(tournamentInfo?.requiresTelegram?{telegramToken}:{})});
+      const data=await apiCall(tournamentId?tournamentRoute('start'):'/api/start', 'POST', {nickname:name, ...(reserved ? {ownerKey:candidateKey} : {}), ...(telegramToken?{telegramToken}:{})});
       seed=data.seed >>> 0;
       remoteId=data.id;
+      vpEligible=!tournamentId && data.vpEligible===true;
       if(tournamentInfo?.requiresTelegram)name=data.nickname;
       mode=tournamentId?'tournament':'global';
     } catch(error) {
@@ -321,7 +322,9 @@ async function start(event) {
   $('startOverlay').hidden=true;
   $('restartButton').disabled=false;
   $('startButton').disabled=false; $('startButton').textContent='Начать игру →';
-  showMessage(mode==='local'?'Локальная игра · общий рейтинг недоступен.':'✓ Автосохранение включено');
+  showMessage(mode==='local'?'Локальная игра · общий рейтинг недоступен.':
+    mode==='tournament'?'✓ Турнирный рекорд сохраняется автоматически':
+    vpEligible?'✓ Автосохранение · VP за достижения включены':'✓ Автосохранение · для VP войди через Telegram в магазине');
   refreshBoard();
   if (shouldEnterFocus()) setFocusMode(true);
 }
@@ -335,7 +338,7 @@ function clearCheckpointTimers(){
 function checkpointPayload(){
   return {id:sessionId,moves:trace,
     ...(ownerKey?{ownerKey}:{}),
-    ...(mode==='tournament' && tournamentInfo?.requiresTelegram?{telegramToken}:{})};
+    ...(telegramToken?{telegramToken}:{})};
 }
 async function checkpoint({quiet=false,keepalive=false}={}) {
   if(!game||ended||!sessionId||!(mode==='global'||mode==='tournament')||game.score<=lastSavedScore) return true;
@@ -360,6 +363,7 @@ async function checkpoint({quiet=false,keepalive=false}={}) {
       if(sessionId===id && result.ok){
         lastSavedTrace=moves;
         lastSavedScore=Math.max(lastSavedScore,Number(result.score)||0);
+        if(Number(result.vpAwarded)>0)notify(`💠 +${Number(result.vpAwarded)} VP за достижение!`);
         if(!quiet && !ended) showMessage(`✓ В рейтинге · ${lastSavedScore.toLocaleString('ru-RU')} очков`);
         if(Date.now()-lastTopRefresh>9000 && document.visibilityState==='visible'){
           lastTopRefresh=Date.now();void loadTop();
@@ -424,9 +428,10 @@ async function finish(){
       try{
         const result=await apiCall(mode==='tournament'?tournamentRoute('finish'):'/api/finish','POST',{
           id,moves:trace,...(ownerKey?{ownerKey}:{}),
-          ...(mode==='tournament'&&tournamentInfo?.requiresTelegram?{telegramToken}:{})
+          ...(telegramToken?{telegramToken}:{})
         });
         lastSavedScore=Math.max(lastSavedScore,Number(result.score)||0);
+        if(Number(result.vpAwarded)>0)notify(`💠 +${Number(result.vpAwarded)} VP за достижение!`);
         sessionId=null;ownerKey='';
         showMessage('✓ Результат в рейтинге · '+lastSavedScore.toLocaleString('ru-RU'));
         void loadTop();
