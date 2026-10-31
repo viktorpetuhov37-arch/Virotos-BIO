@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b141b">
+  <meta name="description" content="Virotos Rewards — демонстрация магазина и партнёрской программы с Telegram-подарками.">
+  <title>Мои промокоды — VIROTOS Rewards</title>
+  <script src="../../js/virotos-theme.js"></script>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/virotos3.css?v=3-0-1">
+  <link rel="stylesheet" href="../../css/rewards-shop.css?v=demo-1">
+</head>
+<body>
+<main class="container shop-page">
+  <header>
+    <a class="logo" href="../../">VIROTOS <span>/</span> REWARDS</a>
+    <span>✦ Магазин и партнёры</span>
+  </header>
+  <nav class="shop-navigation" aria-label="Разделы магазина">
+    <a class="shop-navigation-home" href="../../">← Главная</a>
+    <a href="../../shop/">Магазин</a>
+<a href="../../shop/gifts/">Подарки</a>
+<a href="../../shop/promos/" aria-current="page">Промокоды</a>
+  </nav>
+  <section class="shop-hero" aria-labelledby="shopTitle">
+    <div>
+      <span class="shop-overline">VIROTOS / REWARDS / PROMOS</span>
+      <h1 id="shopTitle">Мои промокоды<span>.</span></h1>
+      <p class="shop-lead">Скидки и награды будут храниться здесь. Пока проверяем внешний вид, копирование и локальную проверку кодов.</p>
+    </div>
+    <div class="shop-hero-art" aria-hidden="true"><span>%</span></div>
+  </section>
+  <div class="shop-demo-notice" role="note"><span class="shop-demo-dot" aria-hidden="true"></span><div><strong>Демонстрационная версия.</strong> Ссылки временно ведут на ресурсы Virotos. Реальных покупок, начисления VP, проверки промокодов ботом и скидок здесь пока нет.</div></div>
+  
+<section class="shop-section" aria-labelledby="myCodesTitle">
+  <div class="shop-section-heading"><div><span class="shop-overline">Личный кабинет · демонстрация</span><h2 id="myCodesTitle">Тестовые промокоды</h2></div><span class="shop-pill">Без настоящих скидок</span></div>
+  <div class="shop-panel">
+    <h2>Моя коллекция</h2>
+    <p>Создай случайный демо-код и скопируй его. Коды хранятся только в браузере на этом устройстве и не связаны с Telegram или сервером.</p>
+    <div id="demoPromoList" class="shop-promo-list" aria-live="polite"><div class="shop-empty">Загрузка тестовых кодов…</div></div>
+    <div class="shop-promo-actions">
+      <button id="demoPromoCreate" class="shop-primary-button" type="button">+ Создать тестовый код</button>
+      <button id="demoPromoReset" class="shop-outline-button" type="button">Очистить демо-коды</button>
+    </div>
+    <div class="shop-preview-divider"></div>
+    <label class="shop-verify-label" for="demoPromoVerifyCode">Проверить код (только в этом браузере)</label>
+    <div class="shop-verify-row"><input id="demoPromoVerifyCode" type="text" maxlength="18" spellcheck="false" autocomplete="off" placeholder="VR-DEMO-XXXXXXXX"><button id="demoPromoVerify" class="shop-outline-button" type="button">Проверить · демо</button></div>
+    <p id="demoPromoFeedback" class="shop-feedback" role="status" aria-live="polite"></p>
+  </div>
+</section>
+<section class="shop-contact-box" aria-labelledby="telegramPromoTitle">
+  <h2 id="telegramPromoTitle">Когда подключим настоящую систему</h2>
+  <p>Рабочий промокод будет выдаваться сервером конкретному Telegram ID. Данил сможет проверить его через защищённую команду бота, и использовать код второй раз уже не получится.</p>
+  <a class="shop-link-button" href="https://t.me/Virotos_bot?start=rewards_demo" data-rewards-target="bot" target="_blank" rel="noopener noreferrer">Открыть @Virotos_bot · тест ↗</a>
+</section>
+
+  <footer><span>© <span id="year"></span> Virotos</span><span>REWARDS · DEMO 01</span></footer>
+</main>
+<div class="shop-toast" id="shopToast" role="status" aria-live="polite"></div>
+<script src="../../js/rewards-demo.js" defer></script>
+</body>
+</html>
