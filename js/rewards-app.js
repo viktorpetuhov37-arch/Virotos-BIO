@@ -71,9 +71,9 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       if(referralState){
         const last=referrals[0];
         referralState.textContent=!last?'Заявок пока нет.':
-          (last.status==='awaiting_partner'?'Переход через бота подтверждён.':
-          last.status==='test'?'Заявка создана. Открой Telegram-бота для подтверждения.':
-          last.status==='completed'?'Заявка завершена.':'Заявка отменена.');
+          (last.status==='awaiting_partner'?(last.accepted_at?'Принята продавцом · тестовый заказ № '+last.id:'Ожидает продавца · тестовая заявка № '+last.id):
+          last.status==='test'?'Заявка № '+last.id+' создана. Подтверди переход в Telegram-боте.':
+          last.status==='completed'?'Тест заявки № '+last.id+' завершён. Покупки не было.':'Заявка № '+last.id+' отменена.');
         if(referralLink){
           if(last?.status==='test' && /^[a-f0-9]{20}$/.test(last.id)){
             referralLink.href='https://t.me/Virotos_bot?start=gift_'+last.id;
