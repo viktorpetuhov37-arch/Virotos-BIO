@@ -1,10 +1,11 @@
 /* Virotos Rewards v0.2 — account, test codes, test referral links. */
 import { API_BASE } from './data/game2048-config.js';
+import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPendingAuth, savePendingAuth, clearPendingAuth } from './virotos-auth.js';
 (() => {
   'use strict';
   const API=String(API_BASE||'').replace(/\/+$/,'');
-  const KEY='virotos_tg_token_v1'; // тот же ключ, что в 2048
-  let token='';try{token=sessionStorage.getItem(KEY)||'';}catch{}
+  const KEY=AUTH_STORAGE_KEY;
+  let token=readAuthToken();
   let activePolling=false;
   const $=id=>document.getElementById(id);
   const notice=(text)=>{const el=$('rwStatus');if(el)el.textContent=text;};
@@ -12,7 +13,7 @@ import { API_BASE } from './data/game2048-config.js';
     if(!API)throw Error('Сервер пока не настроен');
     const response=await fetch(API+path,{method:options.method||'GET',headers:{...(options.method?{'Content-Type':'application/json'}:{}),...(token?{'Authorization':'Bearer '+token}:{})},...(options.method?{body:'{}'}:{})});
     let data;try{data=await response.json();}catch{throw Error('Сервер не ответил корректно');}
-    if(!response.ok)throw Error(data.error||'Не удалось связаться с сервером');
+    if(!response.ok){const error=Error(data.error||'Не удалось связаться с сервером');error.status=response.status;throw error;}
     return data;
   }
   function setLogged(logged,player='') {
@@ -51,8 +52,54 @@ import { API_BASE } from './data/game2048-config.js';
       renderPromo(profile.promos||[]);
       const referrals=$('rwReferralCount');if(referrals)referrals.textContent=String((profile.referrals||[]).length);
     }catch(e){
-      if(/Telegram|войти|снова/i.test(e.message)){token='';try{sessionStorage.removeItem(KEY);}catch{}setLogged(false);renderPromo([]);if($('rwBalance'))$('rwBalance').textContent='—';}
+      if(e.status===401){token='';clearAuthToken();setLogged(false);renderPromo([]);if($('rwBalance'))$('rwBalance').textContent='—';}
       notice(e.message);
+    }
+  }
+  async function pollPendingLogin(pending){
+    if(activePolling || !pending || !pending.id) return;
+    activePolling=true;
+    const btn=$('rwLogin');if(btn)btn.disabled=true;
+    const link=$('rwBotLink');
+    if(link && pending.deepLink){link.hidden=false;link.href=pending.deepLink;link.textContent='Открыть @Virotos_bot ↗';}
+    notice('Открой бота для подтверждения и вернись в эту вкладку. Вход сохранится на устройстве.');
+    try {
+      while(Date.now()<Number(pending.expiresAt) && activePolling){
+        // Poll immediately when returning to the site (no initial 1.7s delay).
+        try{
+          const result=await call('/api/auth/status?id='+encodeURIComponent(pending.id));
+          if(result.status==='confirmed'){
+            token=result.token;
+            saveAuthToken(token);
+            clearPendingAuth();
+            if(link)link.hidden=true;
+            notice('Вход сохранён на этом устройстве');
+            await reload();
+            return;
+          }
+        }catch(e){
+          if(e.status===410 || e.status===409){
+            clearPendingAuth();
+            token=readAuthToken();
+            if(token) await reload();
+            else notice('Подтверждение устарело. Нажми «Войти через Telegram» ещё раз.');
+            return;
+          }
+          // Temporary network trouble is not a logout.
+        }
+        if(document.visibilityState==='hidden'){
+          await new Promise(r=>setTimeout(r,2500));
+        }else{
+          await new Promise(r=>setTimeout(r,1700));
+        }
+      }
+      if(Date.now()>=Number(pending.expiresAt)){
+        clearPendingAuth();
+        notice('Подтверждение устарело. Запроси новую ссылку.');
+      }
+    }finally{
+      activePolling=false;
+      if(btn)btn.disabled=false;
     }
   }
   async function beginLogin(){
@@ -60,23 +107,10 @@ import { API_BASE } from './data/game2048-config.js';
     const btn=$('rwLogin');if(btn)btn.disabled=true;
     notice('Создаём ссылку входа…');
     let pending;
-    try{pending=await call('/api/auth/begin',{method:'POST'});}catch(e){notice(e.message);if(btn)btn.disabled=false;return;}
-    const link=$('rwBotLink');if(link){link.hidden=false;link.href=pending.deepLink;link.textContent='Открыть @Virotos_bot для подтверждения ↗';}
-    notice('Открой бота, нажми Start и вернись сюда. Подтверждение появится автоматически.');
-    activePolling=true;
-    const expires=Number(pending.expiresAt);
-    while(Date.now()<expires && activePolling){
-      await new Promise(r=>setTimeout(r,1700));
-      if(!activePolling)break;
-      try{
-        const result=await call('/api/auth/status?id='+encodeURIComponent(pending.id));
-        if(result.status==='confirmed'){
-          token=result.token;try{sessionStorage.setItem(KEY,token);}catch{}
-          activePolling=false;if(link)link.hidden=true;await reload();break;
-        }
-      }catch(e){if(/устар|использован|expired/i.test(e.message)){notice('Ссылка устарела. Запроси новую.');break;}}
-    }
-    activePolling=false;if(btn)btn.disabled=false;
+    try{pending=await call('/api/auth/begin',{method:'POST'});}
+    catch(e){notice(e.message);if(btn)btn.disabled=false;return;}
+    savePendingAuth(pending);
+    void pollPendingLogin(pending);
   }
   async function newTestCode(){
     const btn=$('rwCreateCode');if(btn)btn.disabled=true;
@@ -94,8 +128,24 @@ import { API_BASE } from './data/game2048-config.js';
   document.querySelectorAll('[data-rewards-target]').forEach(a=>{const key=a.dataset.rewardsTarget;if(links[key])a.href=links[key];});
   const year=$('year');if(year)year.textContent=new Date().getFullYear();
   $('rwLogin')?.addEventListener('click',beginLogin);
-  $('rwLogout')?.addEventListener('click',()=>{token='';activePolling=false;try{sessionStorage.removeItem(KEY);}catch{}void reload();});
+  $('rwLogout')?.addEventListener('click',async()=>{
+    activePolling=false;
+    clearPendingAuth();
+    if(token){
+      try { await call('/api/auth/logout',{method:'POST'}); }
+      catch(e){notice('Не удалось завершить вход на сервере: '+e.message+'. Повтори выход при соединении с интернетом.');return;}
+    }
+    token='';clearAuthToken();
+    await reload();
+  });
+  window.addEventListener('storage',event=>{
+    if(event.key!==KEY)return;
+    token=readAuthToken();
+    activePolling=false;
+    void reload();
+  });
   $('rwCreateCode')?.addEventListener('click',newTestCode);
   $('rwCreateReferral')?.addEventListener('click',newReferral);
   void reload();
+  if(!token){const pending=readPendingAuth();if(pending)void pollPendingLogin(pending);}
 })();

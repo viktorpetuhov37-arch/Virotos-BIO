@@ -1,5 +1,6 @@
 import { API_BASE } from './data/game2048-config.js';
 import { createGame, applyMove, hasMoves, highestTile } from './game2048-engine.js';
+import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPendingAuth, savePendingAuth, clearPendingAuth } from './virotos-auth.js';
 
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = 'virotos2048_bests_v1';
@@ -9,9 +10,9 @@ const API = API_BASE.trim().replace(/\/+$/, '');
 const tournamentId = new URLSearchParams(location.search).get('tournament');
 const validTournamentId = tournamentId && /^[0-9a-f-]{36}$/.test(tournamentId);
 let tournamentInfo=null,serverOffset=0,tournamentClock=null;
-const TG_STORAGE_KEY='virotos_tg_token_v1';
+const TG_STORAGE_KEY=AUTH_STORAGE_KEY;
 let telegramToken=''; let telegramName=''; let telegramPoll=null;
-try{telegramToken=sessionStorage.getItem(TG_STORAGE_KEY)||'';}catch{}
+telegramToken=readAuthToken();
 
 const tournamentRoute=(action='')=>`/api/tournaments/${encodeURIComponent(tournamentId)}${action ? '/'+action : ''}`;
 function timeLeft(ms) {
@@ -51,6 +52,7 @@ async function setupTournament() {
       $('ownerCode').required=false;
       $('tgStatus').textContent='Подтверди свой аккаунт через бота, чтобы участвовать.';
       await checkTelegramSession();
+      if(!telegramToken){const pending=readPendingAuth();if(pending)startTelegramPolling(pending);}
     }
     serverOffset=response.serverNow-Date.now();
     $('eventPlayTitle').textContent=tournamentInfo.title;
@@ -486,9 +488,13 @@ async function checkTelegramSession(){
     telegramName=data.player; $('nickname').value=telegramName;
     $('tgStatus').textContent='✅ Подтверждён аккаунт '+telegramName;
     $('tgLoginButton').textContent='Сменить Telegram-аккаунт';
-  }catch{
-    telegramToken='';telegramName='';try{sessionStorage.removeItem(TG_STORAGE_KEY);}catch{}
-    $('tgStatus').textContent='Войди через Telegram, чтобы начать турнир.';
+  }catch(e){
+    if(e.status===401){
+      telegramToken='';telegramName='';clearAuthToken();
+      $('tgStatus').textContent='Войди через Telegram, чтобы начать турнир.';
+    }else{
+      $('tgStatus').textContent='Нет связи с сервером — повторим проверку при следующем входе.';
+    }
   }
 }
 async function telegramAuthCall(path,method='GET',data=null,token=''){
@@ -497,9 +503,52 @@ async function telegramAuthCall(path,method='GET',data=null,token=''){
     const resp=await fetch(API+path,{method,mode:'cors',signal:controller.signal,cache:'no-store',
       headers:{...(data?{'Content-Type':'application/json'}:{}),...(token?{'Authorization':'Bearer '+token}:{})},
       ...(data?{body:JSON.stringify(data)}:{})});
-    const body=await resp.json();if(!resp.ok||body.error)throw Error(body.error||'Ошибка '+resp.status);
+    const body=await resp.json();if(!resp.ok||body.error){const error=Error(body.error||'Ошибка '+resp.status);error.status=resp.status;throw error;}
     return body;
   }finally{clearTimeout(timer);}
+}
+function startTelegramPolling(pending){
+  if(!pending || !tournamentInfo?.requiresTelegram) return;
+  if(telegramPoll)clearInterval(telegramPoll);
+  $('tgOpenLink').href=pending.deepLink;
+  $('tgOpenLink').hidden=!pending.deepLink;
+  $('tgOpenLink').textContent='Открыть бота для подтверждения ↗';
+  $('tgStatus').textContent='Открой Telegram и вернись в эту вкладку. Вход сохранится.';
+  $('tgLoginButton').disabled=true;
+  let busy=false;
+  const check=async()=>{
+    if(busy)return;
+    if(Date.now()>Number(pending.expiresAt)){
+      clearInterval(telegramPoll);telegramPoll=null;clearPendingAuth();
+      $('tgStatus').textContent='Ссылка устарела, нажми «Войти» снова.';
+      $('tgLoginButton').disabled=false;
+      return;
+    }
+    busy=true;
+    try{
+      const s=await telegramAuthCall('/api/auth/status?id='+encodeURIComponent(pending.id));
+      if(s.status!=='confirmed')return;
+      clearInterval(telegramPoll);telegramPoll=null;clearPendingAuth();
+      telegramToken=s.token;telegramName=s.player;
+      saveAuthToken(telegramToken);
+      $('nickname').value=telegramName;
+      $('tgStatus').textContent='✅ Telegram-вход сохранён: '+telegramName;
+      $('tgOpenLink').hidden=true;
+      $('tgLoginButton').disabled=false;
+      $('tgLoginButton').textContent='Сменить Telegram-аккаунт';
+      $('startError').textContent='';
+    }catch(e){
+      if(e.status===409||e.status===410){
+        clearInterval(telegramPoll);telegramPoll=null;clearPendingAuth();
+        telegramToken=readAuthToken();
+        if(telegramToken)await checkTelegramSession();
+        else $('tgStatus').textContent='Ссылка устарела, нажми «Войти» снова.';
+        $('tgLoginButton').disabled=false;
+      }
+    }finally{busy=false;}
+  };
+  telegramPoll=setInterval(()=>void check(),1800);
+  void check();
 }
 async function loginViaTelegram(){
   if(!API||!tournamentInfo?.requiresTelegram)return;
@@ -508,27 +557,9 @@ async function loginViaTelegram(){
   if(telegramPoll)clearInterval(telegramPoll);
   try{
     const d=await telegramAuthCall('/api/auth/begin','POST',{});
-    $('tgOpenLink').href=d.deepLink;$('tgOpenLink').hidden=false;
-    $('tgOpenLink').textContent='Открыть бота для подтверждения ↗';
-    $('tgStatus').textContent='Открой бота, нажми Start и вернись на страницу. Вход подтвердится автоматически.';
-    // Popup may be blocked. Always leave the explicit deep link visible.
+    savePendingAuth(d);
+    startTelegramPolling(d);
     window.open(d.deepLink,'_blank','noopener,noreferrer');
-    const expiry=d.expiresAt;
-    telegramPoll=setInterval(async()=>{
-      if(Date.now()>expiry){clearInterval(telegramPoll);telegramPoll=null;$('tgStatus').textContent='Ссылка устарела, нажми «Войти» снова.';$('tgLoginButton').disabled=false;return;}
-      try{
-        const s=await telegramAuthCall('/api/auth/status?id='+encodeURIComponent(d.id));
-        if(s.status!=='confirmed')return;
-        clearInterval(telegramPoll);telegramPoll=null;
-        telegramToken=s.token;telegramName=s.player;
-        try{sessionStorage.setItem(TG_STORAGE_KEY,telegramToken);}catch{}
-        $('nickname').value=telegramName;
-        $('tgStatus').textContent='✅ Вход подтверждён: '+telegramName;
-        $('tgOpenLink').hidden=true;
-        $('tgLoginButton').disabled=false;$('tgLoginButton').textContent='Сменить Telegram-аккаунт';
-        $('startError').textContent='';
-      }catch(e){if(/устар|использован/.test(e.message)){clearInterval(telegramPoll);telegramPoll=null;$('tgStatus').textContent=e.message;$('tgLoginButton').disabled=false;}}
-    },1800);
   }catch(e){$('tgStatus').textContent='Ошибка входа: '+e.message;$('tgLoginButton').disabled=false;}
 }
 
@@ -576,6 +607,17 @@ function init() {
     if(e.key==='Escape' && focusMode){setFocusMode(false);e.preventDefault();}
   });
   $('tgLoginButton').addEventListener('click',()=>void loginViaTelegram());
+  window.addEventListener('storage',event=>{
+    if(event.key!==TG_STORAGE_KEY)return;
+    telegramToken=readAuthToken();
+    if(tournamentInfo?.requiresTelegram){
+      if(telegramToken)void checkTelegramSession();
+      else{
+        telegramName='';
+        $('tgStatus').textContent='Войди через Telegram, чтобы начать турнир.';
+      }
+    }
+  });
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='hidden')void checkpoint({quiet:true,keepalive:true});
     else if(game&&!ended&&game.score>lastSavedScore)scheduleCheckpoint(true);
