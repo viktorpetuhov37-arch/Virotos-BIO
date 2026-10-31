@@ -10,6 +10,16 @@ export const about = {
           <p>Я весёлый, добрый и поначалу немного скромный. Этот сайт — место для моих историй, музыки и всего, что мне интересно.</p>
         </div>
       </div>
+      <section class="about-story-card" aria-label="Моя история">
+        <div class="about-story-card__copy">
+          <span class="about-story-card__kicker">Личная история</span>
+          <h4>Мой путь</h4>
+          <p>Важные моменты, перемены и главы жизни — в отдельном разделе.</p>
+        </div>
+        <button class="about-story-card__button" type="button" data-open-section="journey">
+          Читать историю <span aria-hidden="true">↗</span>
+        </button>
+      </section>
       <div class="profile-divider"></div>
       <h4 class="profile-subtitle">Мои соцсети</h4>
       <div class="social-stack">

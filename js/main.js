@@ -66,6 +66,19 @@ document.addEventListener("keydown", event => {
   if (event.key === "Escape" && backdrop.classList.contains("open")) closeModal();
 });
 modalBody.addEventListener("click", event => {
+  const sectionButton = event.target.closest("[data-open-section]");
+  if (sectionButton && modalBody.contains(sectionButton)) {
+    const section = pages[sectionButton.dataset.openSection];
+    if (!section) return;
+    modalTitle.textContent = section.title;
+    modalBody.innerHTML = section.html;
+    modalBody.scrollTop = 0;
+    const nextFocus = sectionButton.dataset.openSection === "journey"
+      ? modalBody.querySelector(".about-story-back")
+      : modalBody.querySelector(".about-story-card__button");
+    (nextFocus || closeButton).focus({ preventScroll: true });
+    return;
+  }
   const button = event.target.closest("[data-copy]");
   if (button) copyText(button.dataset.copy);
 });
