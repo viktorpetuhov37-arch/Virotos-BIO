@@ -47,3 +47,10 @@
 .rw-catalog-info button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:520px){.rw-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.rw-catalog-card{padding:7px;border-radius:13px}.rw-catalog-art{height:clamp(115px,35vw,170px)}.rw-catalog-info strong{font-size:13px}.rw-catalog-price{font-size:15px}.rw-catalog-info button{padding:8px 6px}}
 @media(max-width:335px){.rw-catalog-grid{grid-template-columns:1fr}}
+
+/* 0.6.2 — compact personal-request alternative to catalog orders. */
+.rw-individual-request{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:10px;border-bottom:1px solid var(--v-border)}
+.rw-individual-request h2{font-size:clamp(18px,2.4vw,22px);margin:0 0 6px;letter-spacing:0;color:var(--v-ink)}
+.rw-individual-request p{margin:0;color:var(--v-muted);font-size:13px;line-height:1.5;max-width:56ch}
+.rw-individual-request .shop-outline-button{display:inline-flex;text-decoration:none;align-items:center;justify-content:center;min-height:42px;white-space:nowrap}
+@media(max-width:520px){.rw-individual-request{align-items:stretch;gap:12px}.rw-individual-request .shop-outline-button{width:100%;white-space:normal;text-align:center}}

@@ -25,7 +25,6 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     if($('rwAccount'))$('rwAccount').textContent=logged?player:'Аккаунт не подключён';
     if($('rwCreateCode'))$('rwCreateCode').disabled=!logged;
     if($('rwCreateReferral'))$('rwCreateReferral').disabled=!logged;
-    if($('rwGiftCreate'))$('rwGiftCreate').disabled=!logged;
   }
   const formatTime=stamp=>new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(Number(stamp)));
   function renderPromo(items){
@@ -81,7 +80,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       const enabled=g.status==='available';btn.disabled=!enabled;btn.textContent=enabled?'Заказать · тест':g.status==='preorder'?'Уточнить наличие':'Недоступно';
       if(g.status==='preorder'){
         btn.disabled=false;btn.className='shop-outline-button';
-        btn.addEventListener('click',()=>{const input=$('rwGiftDescription');if(input){input.value='Хочу узнать о подарке: '+g.title;input.focus();input.scrollIntoView({behavior:'smooth',block:'center'});}});
+        btn.addEventListener('click',()=>window.open('https://t.me/Virotos_bot?start=customgift_'+g.id,'_blank','noopener,noreferrer'));
       }
       if(enabled)btn.addEventListener('click',async()=>{
         if(!token){notice('Войди через Telegram, чтобы создать тестовую заявку.');$('rwLogin')?.focus();return;}
@@ -270,19 +269,6 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       notice('Тестовая заявка создана. Открой бота для подтверждения.');
     }catch(e){notice(e.message);}finally{if(btn)btn.disabled=false;}
   }
-  $('rwGiftForm')?.addEventListener('submit',async(event)=>{
-    event.preventDefault();
-    const input=$('rwGiftDescription'),button=$('rwGiftCreate');
-    const description=String(input?.value||'').trim();
-    if(description.length<5||description.length>120){notice('Опиши подарок в 5–120 символах.');return;}
-    if(button)button.disabled=true;
-    try{
-      const response=await call('/api/rewards/gift-order-test',{method:'POST',data:{description}});
-      if(input)input.value='';
-      await reload();notice('Тестовая заявка '+response.orderId+' создана. Отправь /mygifts боту.');
-    }catch(e){notice(e.message);}
-    finally{if(button)button.disabled=false;}
-  });
   $('rwGiftRefresh')?.addEventListener('click',()=>void reload());
   $('rwGiftHistoryDetails')?.addEventListener('toggle',event=>{
     if(event.target.open && !giftHistoryLoaded)void loadGiftHistory(true);
