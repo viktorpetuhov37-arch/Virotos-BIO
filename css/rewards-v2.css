@@ -1,0 +1,28 @@
+/* Compact update on top of existing rewards-shop.css and Virotos 3.0 themes. */
+.shop-page .shop-hero{padding:clamp(18px,3vw,28px);border-radius:21px}
+.shop-page .shop-hero-art{min-height:100px}
+.shop-page .shop-hero-art::before{width:106px;height:106px;border-radius:26px}
+.shop-page .shop-hero-art span{font-size:51px}
+.shop-page .shop-section{margin-top:17px}
+.shop-page .shop-grid{gap:10px}
+.shop-page .shop-card{padding:16px;gap:8px;box-shadow:none}
+.shop-page .shop-action{padding:14px}
+.shop-page .shop-lead{line-height:1.45}
+.shop-page .shop-card p{font-size:12px}
+.shop-page .shop-page-status{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:space-between;margin:13px 0;padding:12px 15px;border:1px solid var(--v-border);border-radius:14px;background:var(--v-surface)}
+.shop-page .rw-auth-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.shop-page .rw-status{font-size:12px;color:var(--v-muted);margin:4px 0 0;flex:1 1 100%;line-height:1.45}
+.shop-page .rw-promo{border:1px solid var(--v-border);border-radius:14px;padding:15px;background:var(--v-surface-2);display:flex;gap:13px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.shop-page .rw-promo strong,.shop-page .rw-promo small,.shop-page .rw-promo code{display:block}
+.shop-page .rw-promo small{font-size:11px;color:var(--v-muted);margin:3px 0 7px}
+.shop-page .rw-promo code{font-size:13px;font-weight:800;letter-spacing:.03em;overflow-wrap:anywhere;color:var(--v-ink)}
+.shop-page .rw-promo-controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.shop-page .rw-empty{color:var(--v-muted);font-size:13px;margin:0}
+.shop-page .rw-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.shop-page #rwBotLink,.shop-page #rwReferralLink{color:var(--v-accent-strong);font-size:12px;font-weight:700}
+.shop-page #rwBotLink[hidden],.shop-page #rwReferralLink[hidden]{display:none}
+.shop-page .shop-balance{padding:14px 17px}
+.shop-page .shop-card-icon{width:40px;height:40px}
+.shop-page .shop-card h3{font-size:16px}
+.shop-page .rw-footnote{font-size:11px;color:var(--v-muted);margin:17px 0 0;line-height:1.5}
+@media(max-width:700px){.shop-page .shop-hero-art{display:none}.shop-page .shop-hero{padding:20px}.shop-page .shop-navigation a{padding:8px 9px;font-size:11px}.shop-page .rw-promo-controls{width:100%;justify-content:space-between}}
