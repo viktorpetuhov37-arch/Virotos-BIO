@@ -26,3 +26,17 @@
 .shop-page .shop-card h3{font-size:16px}
 .shop-page .rw-footnote{font-size:11px;color:var(--v-muted);margin:17px 0 0;line-height:1.5}
 @media(max-width:700px){.shop-page .shop-hero-art{display:none}.shop-page .shop-hero{padding:20px}.shop-page .shop-navigation a{padding:8px 9px;font-size:11px}.shop-page .rw-promo-controls{width:100%;justify-content:space-between}}
+
+/* REWARDS 0.4: компактная витрина скидок для обеих тем. */
+.shop-page .rw-discount-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.shop-page .rw-discount-card{border-radius:17px;padding:18px;display:flex;align-items:flex-start;gap:6px;flex-direction:column;background:linear-gradient(135deg,var(--v-surface),var(--v-surface-2));border:1px solid var(--v-border)}
+.shop-page .rw-discount-card strong{font-size:clamp(25px,4vw,38px);line-height:1.05;letter-spacing:-.02em;color:var(--v-ink)}
+.shop-page .rw-discount-emblem{font-size:15px;color:var(--v-accent-strong)}
+.shop-page .rw-discount-card > span:not(.rw-discount-emblem){font-size:12px;color:var(--v-muted)}
+.shop-page .rw-discount-card button{width:100%;margin-top:auto;min-height:43px;border-radius:11px}
+.shop-page .rw-discount-card button:disabled{opacity:.5;cursor:not-allowed}
+.shop-page .rw-discount-note{font-size:12px;color:var(--v-muted);line-height:1.6;margin:11px 0 0}
+.shop-page .rw-devtools{font-size:12px;color:var(--v-muted);border-radius:12px;border:1px solid var(--v-border);padding:9px}
+.shop-page .rw-devtools summary{cursor:pointer}
+.shop-page .rw-devtools button{margin-top:9px}
+@media(max-width:560px){.shop-page .rw-discount-grid{grid-template-columns:1fr}.shop-page .rw-discount-card{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px}.shop-page .rw-discount-emblem{grid-column:1 / -1}.shop-page .rw-discount-card strong{grid-column:1;grid-row:2}.shop-page .rw-discount-card > span:not(.rw-discount-emblem){grid-column:1;grid-row:3}.shop-page .rw-discount-card button{grid-column:2;grid-row:2 / span 2;width:auto;min-width:125px}}

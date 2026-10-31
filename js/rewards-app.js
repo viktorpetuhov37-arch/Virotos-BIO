@@ -1,4 +1,4 @@
-/* Virotos Rewards v0.2 — account, test codes, test referral links. */
+/* Virotos Rewards v0.4 — verified VP discount vouchers and Telegram account. */
 import { API_BASE } from './data/game2048-config.js';
 import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPendingAuth, savePendingAuth, clearPendingAuth } from './virotos-auth.js';
 (() => {
@@ -11,7 +11,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   const notice=(text)=>{const el=$('rwStatus');if(el)el.textContent=text;};
   async function call(path,options={}) {
     if(!API)throw Error('Сервер пока не настроен');
-    const response=await fetch(API+path,{method:options.method||'GET',headers:{...(options.method?{'Content-Type':'application/json'}:{}),...(token?{'Authorization':'Bearer '+token}:{})},...(options.method?{body:'{}'}:{})});
+    const response=await fetch(API+path,{method:options.method||'GET',headers:{...(options.method?{'Content-Type':'application/json'}:{}),...(token?{'Authorization':'Bearer '+token}:{})},...(options.method?{body:JSON.stringify(options.data||{})}:{})});
     let data;try{data=await response.json();}catch{throw Error('Сервер не ответил корректно');}
     if(!response.ok){const error=Error(data.error||'Не удалось связаться с сервером');error.status=response.status;throw error;}
     return data;
@@ -31,8 +31,8 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     items.forEach(item=>{
       const card=document.createElement('article');card.className='rw-promo';
       const info=document.createElement('div');
-      const title=document.createElement('strong');title.textContent=item.kind==='test'?'Проверочный код · 0 ₽':'Промокод';
-      const subtitle=document.createElement('small');subtitle.textContent='Действует до '+formatTime(item.expiresAt);
+      const title=document.createElement('strong');title.textContent=item.kind==='test'?'Проверочный код · 0 ₽':`Скидка ${item.discountPercent}% · до ${item.maxDiscountRub} ₽`;
+      const subtitle=document.createElement('small');subtitle.textContent='Действует до '+formatTime(item.expiresAt)+(item.kind==='discount'?' · стоимость '+item.costVP+' VP':'');
       const code=document.createElement('code');code.textContent=item.code;
       info.append(title,subtitle,code);
       const ctrl=document.createElement('div');ctrl.className='rw-promo-controls';
@@ -40,19 +40,35 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       const copy=document.createElement('button');copy.type='button';copy.className='shop-outline-button';copy.textContent='Копировать';copy.addEventListener('click',async()=>{
         try{await navigator.clipboard.writeText(item.code);notice('Код скопирован');}catch{notice('Выдели код вручную');}
       });
-      ctrl.append(state,copy);card.append(info,ctrl);list.append(card);
+      ctrl.append(state,copy);
+      if(item.kind==='discount'&&item.status==='active'){
+        const cancel=document.createElement('button');cancel.type='button';cancel.className='shop-outline-button';cancel.textContent='Вернуть VP';
+        cancel.addEventListener('click',async()=>{
+          if(!confirm('Отменить этот неиспользованный код и вернуть '+item.costVP+' VP?'))return;
+          cancel.disabled=true;
+          try{await call('/api/rewards/cancel-discount',{method:'POST',data:{code:item.code}});await reload();notice('Код отменён. VP возвращены.');}
+          catch(e){notice(e.message);cancel.disabled=false;}
+        });ctrl.append(cancel);
+      }
+      card.append(info,ctrl);list.append(card);
     });
   }
   async function reload() {
-    if(!token){setLogged(false);renderPromo([]);if($('rwBalance'))$('rwBalance').textContent='—';notice('Войди через Telegram, чтобы открыть кошелёк и промокоды.');return;}
+    if(!token){setLogged(false);renderPromo([]);document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';notice('Войди через Telegram, чтобы открыть кошелёк и промокоды.');return;}
     try {
       const profile=await call('/api/rewards/me');
       setLogged(true,profile.player);notice('Telegram подтверждён');
       if($('rwBalance'))$('rwBalance').textContent=Number(profile.balanceVP).toLocaleString('ru-RU');
       renderPromo(profile.promos||[]);
+      document.querySelectorAll('[data-buy-discount]').forEach(button=>{
+        const cost=Number(button.dataset.costVp);
+        button.disabled=!profile.partnerReady||!Number.isFinite(cost)||Number(profile.balanceVP)<cost;
+        button.title=!profile.partnerReady?'Продавец ещё не подключён':(button.disabled?'Недостаточно VP':'');
+      });
+      if($('rwDiscountStatus'))$('rwDiscountStatus').textContent=profile.partnerReady?'Купоны доступны для покупки за VP. Согласуй цену с продавцом перед оплатой.':'Купоны откроются после подключения Telegram продавца.';
       const referrals=$('rwReferralCount');if(referrals)referrals.textContent=String((profile.referrals||[]).length);
     }catch(e){
-      if(e.status===401){token='';clearAuthToken();setLogged(false);renderPromo([]);if($('rwBalance'))$('rwBalance').textContent='—';}
+      if(e.status===401){token='';clearAuthToken();setLogged(false);renderPromo([]);document.querySelectorAll('[data-buy-discount]').forEach(b=>b.disabled=true);if($('rwBalance'))$('rwBalance').textContent='—';}
       notice(e.message);
     }
   }
@@ -143,6 +159,17 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     token=readAuthToken();
     activePolling=false;
     void reload();
+  });
+  document.querySelectorAll('[data-buy-discount]').forEach(button=>{
+    button.addEventListener('click',async()=>{
+      const percent=Number(button.dataset.buyDiscount),cost=Number(button.dataset.costVp);
+      if(!confirm(`Купить скидку ${percent}% за ${cost} VP? Воспользоваться можно только у партнёра после согласования цены.`))return;
+      button.disabled=true;
+      try{
+        const result=await call('/api/rewards/buy-discount',{method:'POST',data:{percent}});
+        await reload();notice('Промокод создан. Открой «Мои промокоды» или отправь /promos боту.');
+      }catch(e){notice(e.message);await reload();}
+    });
   });
   $('rwCreateCode')?.addEventListener('click',newTestCode);
   $('rwCreateReferral')?.addEventListener('click',newReferral);
