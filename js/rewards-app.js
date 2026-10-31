@@ -34,7 +34,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     items.forEach(item=>{
       const card=document.createElement('article');card.className='rw-promo';
       const info=document.createElement('div');
-      const title=document.createElement('strong');title.textContent=item.kind==='test'?'Проверочный код · 0 ₽':`Скидка ${item.discountPercent}% · до ${item.maxDiscountRub} ₽`;
+      const title=document.createElement('strong');title.textContent=item.kind==='test'?'Проверочный код · 0 ₽':`Скидка ${item.discountPercent}%`;
       const subtitle=document.createElement('small');subtitle.textContent='Действует до '+formatTime(item.expiresAt)+(item.kind==='discount'?' · стоимость '+item.costVP+' VP':'');
       const code=document.createElement('code');code.textContent=item.code;
       info.append(title,subtitle,code);
@@ -57,7 +57,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     });
   }
   // 0.6: public seller-managed catalog, independent of Telegram login.
-  let catalogItems=[],catalogFilter='all',ordersOpen=true,checkoutGift=null,checkoutPreview=null,checkoutRequestId=null;
+  let catalogItems=[],catalogFilter='all',catalogSearch='',catalogPage=0,catalogTotal=0,catalogRequestSeq=0,catalogMoreLoading=false,ordersOpen=true,checkoutGift=null,checkoutPreview=null,checkoutRequestId=null;
   const fmtMoney=kop=>(Number(kop)/100).toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';
   function invalidateCheckout(){checkoutPreview=null;const submit=$('rwCheckoutSubmit');if(submit)submit.disabled=true;}
   function chooseCatalogGift(g){
@@ -105,7 +105,9 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   function renderCatalog(){
     const root=$('rwCatalogItems');if(!root)return;
     root.replaceChildren();
-    const list=catalogItems.filter(g=>catalogFilter==='all'||g.status===catalogFilter);
+    const list=catalogItems;
+    const count=$('rwCatalogCount');if(count)count.textContent='Показано '+list.length+' из '+catalogTotal;
+    const more=$('rwCatalogMore');if(more){more.hidden=list.length>=catalogTotal;more.disabled=catalogMoreLoading;}
     if(!list.length){const p=document.createElement('p');p.className='rw-empty';p.textContent='В этой категории пока нет подарков.';root.append(p);return;}
     const statuses={available:'В наличии',reserved:'Зарезервирован',preorder:'Под заказ',unavailable:'Нет в наличии'};
     for(const g of list){
@@ -133,17 +135,34 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       main.append(name,price,state,btn);card.append(art,main);root.append(card);
     }
   }
-  async function loadCatalog(){
-    if(!$('rwCatalogItems'))return;
-    try{const result=await call('/api/rewards/gifts/catalog');catalogItems=Array.isArray(result.items)?result.items:[];ordersOpen=result.ordersOpen!==false;renderCatalog();}
-    catch(e){const root=$('rwCatalogItems');if(root)root.textContent='Не удалось загрузить каталог: '+e.message;}
+  async function loadCatalog(append=false){
+    if(!$('rwCatalogItems')||(append&&catalogMoreLoading))return;
+    const seq=++catalogRequestSeq;
+    const page=append?catalogPage+1:0;
+    if(append)catalogMoreLoading=true;
+    try{
+      const params=new URLSearchParams({paged:'1',page:String(page),status:catalogFilter,q:catalogSearch});
+      const result=await call('/api/rewards/gifts/catalog?'+params.toString());
+      if(seq!==catalogRequestSeq)return; // Another search/filter was started while fetching.
+      const fresh=Array.isArray(result.items)?result.items:[];
+      catalogItems=append?catalogItems.concat(fresh):fresh;
+      catalogPage=page;catalogTotal=Number(result.total||0);ordersOpen=result.ordersOpen!==false;
+      renderCatalog();
+    }catch(e){if(seq===catalogRequestSeq){notice('Не удалось загрузить каталог: '+e.message);if(!append){catalogItems=[];catalogTotal=0;renderCatalog();}}}
+    finally{if(append)catalogMoreLoading=false;if(seq===catalogRequestSeq)renderCatalog();}
   }
   document.querySelectorAll('[data-catalog-filter]').forEach(button=>button.addEventListener('click',()=>{
     catalogFilter=button.dataset.catalogFilter;
     document.querySelectorAll('[data-catalog-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
-    renderCatalog();
+    void loadCatalog();
   }));
   $('rwCatalogRefresh')?.addEventListener('click',()=>void loadCatalog());
+  let catalogSearchTimer=0;
+  $('rwCatalogSearch')?.addEventListener('input',e=>{
+    catalogSearch=String(e.target.value||'').trim().slice(0,80);
+    clearTimeout(catalogSearchTimer);catalogSearchTimer=setTimeout(()=>void loadCatalog(),180);
+  });
+  $('rwCatalogMore')?.addEventListener('click',()=>void loadCatalog(true));
   const GIFT_STAGES={new:'Ожидает продавца',accepted:'Принята продавцом',quoted:'Цена предложена',confirmed:'Цена согласована',paid:'Оплата отмечена (тест)',delivered:'Передача отмечена (тест)',cancelled:'Отменена'};
   function renderGiftOrders(orders,rootId='rwGiftOrders',append=false){
     const el=$(rootId);if(!el)return;
@@ -213,7 +232,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       if(codeOptions){codeOptions.replaceChildren();for(const p of profile.promos||[]){
         if(p.status==='active'&&Number(p.expiresAt)>Date.now()){
           const option=document.createElement('option');option.value=p.code;
-          option.label=p.kind==='test'?'Проверочный · 0 ₽':`Скидка ${p.discountPercent}% · до ${p.maxDiscountRub} ₽`;
+          option.label=p.kind==='test'?'Проверочный · 0 ₽':`Скидка ${p.discountPercent}%`;
           codeOptions.append(option);
         }
       }}
@@ -324,7 +343,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     if(event.target.open && !giftHistoryLoaded)void loadGiftHistory(true);
   });
   $('rwGiftHistoryMore')?.addEventListener('click',()=>void loadGiftHistory());
-  const links={reviews:'https://t.me/viktor_l1fe',seller:'https://t.me/Virotos',bot:'https://t.me/Virotos_bot?start=rewards'};
+  const links={reviews:'https://t.me/viktor_l1fe',seller:'https://t.me/Virotos_bot?start=customgift',bot:'https://t.me/Virotos_bot?start=rewards'};
   document.querySelectorAll('[data-rewards-target]').forEach(a=>{const key=a.dataset.rewardsTarget;if(links[key])a.href=links[key];});
   const year=$('year');if(year)year.textContent=new Date().getFullYear();
   $('rwLogin')?.addEventListener('click',beginLogin);
