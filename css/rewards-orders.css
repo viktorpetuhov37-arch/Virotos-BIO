@@ -82,3 +82,8 @@
 .rw-store-focus__icon{border-radius:18px;min-height:150px;display:flex;align-items:center;justify-content:center;background:var(--v-surface-2);font-size:65px}
 .rw-store-focus .shop-primary-button{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-height:44px;padding:10px 18px}
 @media(max-width:620px){.rw-store-focus{grid-template-columns:1fr}.rw-store-focus__icon{min-height:85px;font-size:45px;order:-1}}
+
+/* 0.8 — stock and reservation layout */
+.rw-catalog-state{line-height:1.45}
+.rw-catalog-state.rw-catalog-available{font-weight:650}
+.rw-gift-order__top .shop-pill{white-space:normal}

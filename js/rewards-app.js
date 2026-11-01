@@ -67,7 +67,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     $('rwCheckoutTitle').textContent=g.title;
     $('rwCheckoutPrice').textContent=Number(g.priceRub).toLocaleString('ru-RU')+' ₽';
     $('rwCheckoutPromo').value='';
-    $('rwCheckoutResult').textContent='Проверь стоимость и примени код, если нужен. Пока без оплаты.';
+    $('rwCheckoutResult').textContent='Проверь стоимость и промокод. Резерв на 24 часа, без реальной оплаты.';
     section.hidden=false;section.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
   async function calculateCheckout(){
@@ -80,7 +80,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       $('rwCheckoutPrice').textContent=Number(q.priceRub).toLocaleString('ru-RU')+' ₽';
       $('rwCheckoutResult').textContent='Скидка: '+fmtMoney(q.discountKopeks)+' · Итого: '+fmtMoney(q.totalKopeks)+
         (q.promoCode?' · '+(q.demo?'демонстрационный код':'купон закрепляется за тестовым заказом, без погашения'):'')+
-        '. Тест: деньги и VP не списываются при оформлении заказа.';
+        '. Резерв на 24 часа: деньги и VP не списываются.';
       $('rwCheckoutSubmit').disabled=false;
     }catch(e){$('rwCheckoutResult').textContent=e.message;notice(e.message);}
     finally{button.disabled=false;}
@@ -93,13 +93,13 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   $('rwCheckoutSubmit')?.addEventListener('click',async()=>{
     if(!checkoutGift||!checkoutPreview)return;
     if(String($('rwCheckoutPromo').value||'').trim().toUpperCase()!==checkoutPreview.promoCode){invalidateCheckout();return;}
-    if(!confirm('Создать тестовый заказ «'+checkoutGift.title+'» на '+fmtMoney(checkoutPreview.totalKopeks)+'? Без оплаты и передачи подарка.'))return;
+    if(!confirm('Зарезервировать «'+checkoutGift.title+'» на 24 часа по цене '+fmtMoney(checkoutPreview.totalKopeks)+'? Это тест, оплаты и передачи нет.'))return;
     const button=$('rwCheckoutSubmit');button.disabled=true;
     try{
       const result=await call('/api/rewards/gift-order-test',{method:'POST',data:{catalogId:checkoutGift.id,promoCode:checkoutPreview.promoCode,
         expectedPriceRub:checkoutPreview.priceRub,expectedDiscountKopeks:checkoutPreview.discountKopeks,requestId:checkoutRequestId}});
       $('rwCheckout').hidden=true;checkoutGift=null;checkoutPreview=null;checkoutRequestId=null;
-      await reload();await loadCatalog();notice('Заказ '+result.orderId+' создан по фиксированной цене. Открой его в Telegram.');
+      await reload();await loadCatalog();notice('Резерв № '+result.orderId+' создан на 24 часа. Открой заказ в Telegram.');
     }catch(e){invalidateCheckout();$('rwCheckoutResult').textContent=e.message;notice(e.message);await loadCatalog();}
   });
   function renderCatalog(){
@@ -121,10 +121,13 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       const main=document.createElement('div');main.className='rw-catalog-info';
       const name=document.createElement('strong');name.textContent=g.title;
       const price=document.createElement('span');price.className='rw-catalog-price';price.textContent=Number(g.priceRub).toLocaleString('ru-RU')+' ₽';
-      const state=document.createElement('small');state.className='rw-catalog-state rw-catalog-'+g.status;state.textContent=statuses[g.status]||g.status;
+      const state=document.createElement('small');state.className='rw-catalog-state rw-catalog-'+g.status;
+      const units=Math.max(0,Number(g.stockAvailable||0));
+      state.textContent=(statuses[g.status]||g.status)+(g.status==='available'?' · свободно: '+units+' шт.':'');
       const btn=document.createElement('button');btn.className='shop-primary-button';btn.type='button';
-      const enabled=g.status==='available'&&ordersOpen;btn.disabled=!enabled;btn.textContent=
-        g.status==='available'&&!ordersOpen?'Приём заказов на паузе':enabled?'Оформить · тест':g.status==='preorder'?'Уточнить наличие':'Недоступно';
+      const enabled=g.status==='available'&&ordersOpen&&units>0;btn.disabled=!enabled;btn.textContent=
+        g.status==='available'&&!ordersOpen?'Приём на паузе':enabled?'Резерв · тест':
+        g.status==='available'?'Нет свободных':g.status==='preorder'?'Уточнить наличие':'Недоступно';
       if(g.status==='preorder'){
         btn.disabled=false;btn.className='shop-outline-button';
         btn.addEventListener('click',()=>window.open('https://t.me/Virotos_bot?start=customgift_'+g.id,'_blank','noopener,noreferrer'));
@@ -175,7 +178,8 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       const tag=document.createElement('span');tag.className='shop-pill';tag.textContent=GIFT_STAGES[o.status]||o.status;
       top.append(name,tag);
       const detail=document.createElement('small');detail.textContent='№ '+o.id+(o.priceRub?' · '+o.priceRub.toLocaleString('ru-RU')+' ₽':'')+
-        (o.catalogFixed?' · Итого '+fmtMoney(o.totalKopeks)+(o.promoDiscountKopeks?' (−'+fmtMoney(o.promoDiscountKopeks)+')':''):'')+' · только тест';
+        (o.catalogFixed?' · Итого '+fmtMoney(o.totalKopeks)+(o.promoDiscountKopeks?' (−'+fmtMoney(o.promoDiscountKopeks)+')':''):'')+
+        (o.reservationExpiresAt?' · Резерв до '+formatTime(o.reservationExpiresAt):' · Без резерва (старый заказ)'):'')+' · только тест';
       const actions=document.createElement('div');actions.className='rw-actions';
       const open=document.createElement('a');open.className='shop-outline-button';open.textContent='Открыть в боте ↗';open.href='https://t.me/Virotos_bot?start=order_'+o.id;open.target='_blank';open.rel='noopener noreferrer';actions.append(open);
       if(o.status==='quoted'&&!o.catalogFixed){
