@@ -166,7 +166,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
     clearTimeout(catalogSearchTimer);catalogSearchTimer=setTimeout(()=>void loadCatalog(),180);
   });
   $('rwCatalogMore')?.addEventListener('click',()=>void loadCatalog(true));
-  const GIFT_STAGES={new:'Ожидает продавца',accepted:'Принята продавцом',quoted:'Цена предложена',confirmed:'Цена согласована',paid:'Оплата отмечена (тест)',delivered:'Передача отмечена (тест)',cancelled:'Отменена'};
+  const GIFT_STAGES={new:'Ожидает продавца',accepted:'Принята продавцом',quoted:'Цена предложена',confirmed:'Ожидает оплаты (тест)',paid:'Оплата подтверждена (тест)',delivered:'Подарок отправлен (тест)',cancelled:'Отменена'};
   function renderGiftOrders(orders,rootId='rwGiftOrders',append=false){
     const el=$(rootId);if(!el)return;
     if(!append)el.replaceChildren();
@@ -175,11 +175,11 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       const card=document.createElement('article');card.className='rw-gift-order';
       const top=document.createElement('div');top.className='rw-gift-order__top';
       const name=document.createElement('strong');name.textContent=o.description;
-      const tag=document.createElement('span');tag.className='shop-pill';tag.textContent=GIFT_STAGES[o.status]||o.status;
+      const tag=document.createElement('span');tag.className='shop-pill';tag.textContent=o.returnRecorded?'Товар возвращён (тест)':(GIFT_STAGES[o.status]||o.status);
       top.append(name,tag);
       const detail=document.createElement('small');detail.textContent='№ '+o.id+(o.priceRub?' · '+o.priceRub.toLocaleString('ru-RU')+' ₽':'')+
         (o.catalogFixed?' · Итого '+fmtMoney(o.totalKopeks)+(o.promoDiscountKopeks?' (−'+fmtMoney(o.promoDiscountKopeks)+')':''):'')+
-        (o.reservationLocked?' · Резерв до передачи':o.reservationExpiresAt?' · Резерв до '+formatTime(o.reservationExpiresAt):' · Без резерва (старый заказ)')+' · только тест';
+        (o.reservationLocked?' · Резерв до передачи':o.reservationExpiresAt?' · Резерв до '+formatTime(o.reservationExpiresAt):' · Без резерва (старый заказ)')+' · тестовый заказ';
       const actions=document.createElement('div');actions.className='rw-actions';
       const open=document.createElement('a');open.className='shop-outline-button';open.textContent='Открыть в боте ↗';open.href='https://t.me/Virotos_bot?start=order_'+o.id;open.target='_blank';open.rel='noopener noreferrer';actions.append(open);
       if(o.status==='quoted'&&!o.catalogFixed){
