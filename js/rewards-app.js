@@ -179,7 +179,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       top.append(name,tag);
       const detail=document.createElement('small');detail.textContent='№ '+o.id+(o.priceRub?' · '+o.priceRub.toLocaleString('ru-RU')+' ₽':'')+
         (o.catalogFixed?' · Итого '+fmtMoney(o.totalKopeks)+(o.promoDiscountKopeks?' (−'+fmtMoney(o.promoDiscountKopeks)+')':''):'')+
-        (o.reservationExpiresAt?' · Резерв до '+formatTime(o.reservationExpiresAt):' · Без резерва (старый заказ)'):'')+' · только тест';
+        (o.reservationExpiresAt?' · Резерв до '+formatTime(o.reservationExpiresAt):' · Без резерва (старый заказ)')+' · только тест';
       const actions=document.createElement('div');actions.className='rw-actions';
       const open=document.createElement('a');open.className='shop-outline-button';open.textContent='Открыть в боте ↗';open.href='https://t.me/Virotos_bot?start=order_'+o.id;open.target='_blank';open.rel='noopener noreferrer';actions.append(open);
       if(o.status==='quoted'&&!o.catalogFixed){
