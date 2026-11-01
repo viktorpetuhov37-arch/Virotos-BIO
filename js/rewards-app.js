@@ -204,7 +204,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
         btn.addEventListener('click',async()=>{
           if(!confirm('Отменить тестовый заказ '+o.id+'?'))return;
           btn.disabled=true;
-          try{await call('/api/rewards/gift-order-cancel',{method:'POST',data:{id:o.id}});await reload();notice('Тестовый заказ отменён.');}catch(e){notice(e.message);btn.disabled=false;}
+          try{await call('/api/rewards/gift-order-cancel',{method:'POST',data:{id:o.id}});await reload();await loadCatalog();notice('Тестовый заказ отменён, резерв освобождён.');}catch(e){notice(e.message);btn.disabled=false;}
         });actions.append(btn);
       }
       card.append(top,detail,actions);el.append(card);
@@ -391,7 +391,19 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
   });
 
   $('rwCheckReferral')?.addEventListener('click',()=>void reload());
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&token)void reload();});
+  // 0.8.2 — refresh free stock automatically on the first catalog page.
+  // Do not interrupt browsing subsequent pages or an open checkout form.
+  const refreshCatalogIfIdle=()=>{
+    if(document.visibilityState==='visible' && catalogPage===0 &&
+       !catalogMoreLoading && !checkoutGift && $('rwCatalogItems'))void loadCatalog();
+  };
+  if($('rwCatalogItems'))setInterval(refreshCatalogIfIdle,30000);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'){
+      if(token)void reload();
+      refreshCatalogIfIdle();
+    }
+  });
   void loadCatalog();
   void reload();
   if(!token){const pending=readPendingAuth();if(pending)void pollPendingLogin(pending);}
