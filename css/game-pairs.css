@@ -1,21 +1,49 @@
-/* Virotos Games 002 - Pairs, theme variables from Virotos 3.0 */
-.pairs-page {max-width:900px}
-.pairs-hero {padding:clamp(20px,3vw,32px);margin:16px 0}
-.pairs-hero h1 {font-size:clamp(34px,6vw,54px)}
-.pairs-panel {background:var(--v-surface);border:1px solid var(--v-border);padding:clamp(13px,3vw,27px);border-radius:22px}
-.pairs-meta {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 16px}
-.pairs-stat {background:var(--v-surface-2);border:1px solid var(--v-border);padding:12px;border-radius:13px;min-width:0}
-.pairs-stat span {display:block;font-size:11px;color:var(--v-muted);margin-bottom:5px}
-.pairs-stat strong {font-size:19px;color:var(--v-ink);font-variant-numeric:tabular-nums}
-.pairs-actions {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:11px;margin-bottom:16px}
-.pairs-restart {border:0;background:var(--v-accent);color:var(--v-accent-ink);border-radius:11px;min-height:43px;padding:10px 16px;font:inherit;font-weight:750;cursor:pointer}
-.pairs-disclaimer {font-size:12px;color:var(--v-muted)}
-.pairs-board {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-width:580px;margin:0 auto}
-.pairs-card {aspect-ratio:1;min-height:66px;border:1px solid var(--v-border-strong);background:var(--v-surface-2);color:var(--v-ink);border-radius:15px;font-size:clamp(25px,5vw,38px);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;transition:background .13s,border-color .13s,transform .13s}
+/* Virotos Games / Pairs: compact laptop-first board, v0.9.6.3 */
+.pairs-page {max-width:760px}
+.pairs-hero {padding:clamp(15px,2.5vw,22px);margin:10px 0 12px;border-radius:18px}
+.pairs-hero h1 {font-size:clamp(30px,4.5vw,42px);margin:7px 0}
+.pairs-hero p {font-size:13px;line-height:1.5}
+.pairs-page .games-nav {margin:8px 0 12px;gap:9px}
+.pairs-page .games-nav a {padding:7px 12px;font-size:12px}
+.pairs-panel {background:var(--v-surface);border:1px solid var(--v-border);padding:clamp(11px,2vw,17px);border-radius:18px}
+.pairs-meta {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 10px}
+.pairs-stat {background:var(--v-surface-2);border:1px solid var(--v-border);padding:8px 10px;border-radius:10px;min-width:0}
+.pairs-stat span {display:block;font-size:10px;color:var(--v-muted);margin-bottom:3px}
+.pairs-stat strong {font-size:15px;color:var(--v-ink);font-variant-numeric:tabular-nums;line-height:1.25}
+.pairs-actions {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.pairs-restart {border:0;background:var(--v-accent);color:var(--v-accent-ink);border-radius:9px;min-height:35px;padding:7px 12px;font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+.pairs-disclaimer {font-size:11px;color:var(--v-muted);max-width:350px;text-align:right;line-height:1.35}
+.pairs-board {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;width:100%;max-width:342px;margin:0 auto}
+.pairs-card {aspect-ratio:1;min-height:0;border:1px solid var(--v-border-strong);background:var(--v-surface-2);color:var(--v-ink);border-radius:11px;font-size:clamp(22px,3vw,30px);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;transition:background .13s,border-color .13s,transform .13s}
 .pairs-card:not(:disabled):hover {border-color:var(--v-accent);transform:translateY(-1px)}
 .pairs-card[data-open="false"] {background:var(--v-elevated);color:var(--v-accent-strong)}
 .pairs-card[data-matched="true"] {border-color:var(--v-accent);background:var(--v-selected);cursor:default}
-.pairs-card:focus-visible,.pairs-restart:focus-visible {outline:3px solid var(--v-accent);outline-offset:3px}
-.pairs-message {min-height:27px;text-align:center;color:var(--v-muted);font-size:14px;line-height:1.5;margin:16px 0 0}
-@media(max-width:550px){.pairs-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.pairs-board{gap:7px}.pairs-card{min-height:55px;border-radius:11px}}
+.pairs-card:focus-visible,.pairs-restart:focus-visible,.pairs-rewards summary:focus-visible {outline:3px solid var(--v-accent);outline-offset:2px}
+.pairs-message {min-height:20px;text-align:center;color:var(--v-muted);font-size:12px;line-height:1.45;margin:10px 0 0}
+.pairs-rewards {margin:11px 0 0;border:1px solid var(--v-border);border-radius:12px;background:var(--v-surface);font-size:12px}
+.pairs-rewards summary {padding:10px 13px;cursor:pointer;list-style-position:inside;font-weight:750;color:var(--v-ink)}
+.pairs-rewards summary span {font-weight:400;color:var(--v-muted);margin-left:4px}
+.pairs-rewards-content {padding:0 13px 12px;color:var(--v-muted);line-height:1.5}
+.pairs-reward-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:6px 0 8px}
+.pairs-reward-tier {padding:8px;border:1px solid var(--v-border);border-radius:9px;background:var(--v-surface-2);min-width:0}
+.pairs-reward-tier strong {display:block;font-size:12px;color:var(--v-ink)}
+.pairs-reward-tier span {display:block;font-size:11px}
+.pairs-reward-speed {margin:7px 0}
+.pairs-page footer {margin-top:16px}
+@media(max-width:530px) {
+  .pairs-meta {grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .pairs-stat {padding:7px 9px}
+  .pairs-board {max-width:318px;gap:6px}
+  .pairs-card {font-size:26px;border-radius:10px}
+  .pairs-actions {align-items:flex-start}
+  .pairs-disclaimer {max-width:220px;font-size:10px}
+}
+@media(max-width:360px) {.pairs-board{max-width:288px;gap:5px}.pairs-reward-grid{grid-template-columns:1fr}.pairs-disclaimer{max-width:170px}}
+@media(max-height:820px) and (min-width:531px) {
+  .pairs-page .games-nav {margin:5px 0 9px}
+  .pairs-hero {padding:13px 18px;margin:8px 0 10px}
+  .pairs-hero p {margin:4px 0}
+  .pairs-board {max-width:324px;gap:6px}
+  .pairs-panel {padding:12px 15px}
+}
 @media(prefers-reduced-motion:reduce){.pairs-card{transition:none}}

@@ -1,11 +1,22 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b141b"><title>Пары — Игры Virotos</title>
-<script src="../../js/virotos-theme.js"></script><link rel="stylesheet" href="../../css/main.css"><link rel="stylesheet" href="../../css/virotos3.css?v=3-0-1"><link rel="stylesheet" href="../../css/games-hub.css?v=071"><link rel="stylesheet" href="../../css/game-pairs.css?v=0962"></head>
+<script src="../../js/virotos-theme.js"></script><link rel="stylesheet" href="../../css/main.css"><link rel="stylesheet" href="../../css/virotos3.css?v=3-0-1"><link rel="stylesheet" href="../../css/games-hub.css?v=071"><link rel="stylesheet" href="../../css/game-pairs.css?v=0963"></head>
 <body><main class="container games-hub pairs-page"><header><a class="logo" href="../../">VIROTOS <span>/</span> GAMES</a><span>✦ Игра</span></header>
 <nav class="games-nav"><a href="../">← Все игры</a><a href="../../shop/">Мои VP и скидки</a></nav>
-<section class="games-hero pairs-hero"><span class="games-overline">VIROTOS / GAMES / 002</span><h1>Пары<span>.</span></h1><p>Находи одинаковые карточки за минимальное число попыток. Тренировочная игра: награды VP пока не начисляются.</p></section>
+<section class="games-hero pairs-hero"><span class="games-overline">VIROTOS / GAMES / 002</span><h1>Пары<span>.</span></h1><p>Находи одинаковые карточки за минимальное число попыток. Поле стало компактнее. За точность предусмотрены три уровня будущих наград, а за скорость — бонус. Пока VP не начисляются.</p></section>
 <section class="pairs-panel" aria-label="Игровое поле"><div class="pairs-meta"><div class="pairs-stat"><span>Попытки</span><strong id="pairsMoves">0</strong></div><div class="pairs-stat"><span>Найдено</span><strong id="pairsFound">0 / 8</strong></div><div class="pairs-stat"><span>Время</span><strong id="pairsTime">00:00</strong></div><div class="pairs-stat"><span>Лучший результат</span><strong id="pairsBest">—</strong></div></div>
-<div class="pairs-actions"><button type="button" id="pairsRestart" class="pairs-restart">Новая партия</button><span class="pairs-disclaimer">Без начисления VP · Рекорд хранится только на этом устройстве</span></div>
+<div class="pairs-actions"><button type="button" id="pairsRestart" class="pairs-restart">Новая партия</button><span class="pairs-disclaimer">VP пока не начисляются · Рекорд на этом устройстве</span></div>
 <div id="pairsBoard" class="pairs-board" aria-label="Карточки для поиска пар"></div>
 <p id="pairsMessage" class="pairs-message" role="status" aria-live="polite">Открой две карточки и найди одинаковые символы.</p></section>
-<footer><span>© <span id="year"></span> Virotos</span><span>Игры · VP</span></footer></main><script src="../../js/game-pairs.js" defer></script></body></html>
+<details class="pairs-rewards"><summary>🏆 Награды за игру <span>правила на будущее · VP пока не начисляются</span></summary>
+  <div class="pairs-rewards-content">
+    <div class="pairs-reward-grid">
+      <div class="pairs-reward-tier"><strong>🥇 Золото · 16 VP</strong><span>8–10 ходов</span></div>
+      <div class="pairs-reward-tier"><strong>🥈 Серебро · 10 VP</strong><span>11–14 ходов</span></div>
+      <div class="pairs-reward-tier"><strong>🥉 Бронза · 6 VP</strong><span>15–20 ходов</span></div>
+    </div>
+    <p class="pairs-reward-speed">⚡ Скорость: ещё 4 VP за завершение не дольше 30 секунд.</p>
+    <p>План: максимум 20 VP в день за лучший результат. Накопить VP за эту игру можно будет только после серверной проверки партий, привязки к Telegram и введения суточного лимита. Сейчас награды показываются исключительно как предварительный расчёт.</p>
+  </div>
+</details>
+<footer><span>© <span id="year"></span> Virotos</span><span>Игры · VP</span></footer></main><script src="../../js/game-pairs.js?v=0963" defer></script></body></html>
