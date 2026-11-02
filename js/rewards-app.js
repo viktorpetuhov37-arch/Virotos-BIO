@@ -179,7 +179,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
       top.append(name,tag);
       const detail=document.createElement('small');detail.textContent='№ '+o.id+(o.priceRub?' · '+o.priceRub.toLocaleString('ru-RU')+' ₽':'')+
         (o.catalogFixed?' · Итого '+fmtMoney(o.totalKopeks)+(o.promoDiscountKopeks?' (−'+fmtMoney(o.promoDiscountKopeks)+')':''):'')+
-        (o.reservationLocked?' · Резерв до передачи':o.reservationExpiresAt?' · Резерв до '+formatTime(o.reservationExpiresAt):' · Без резерва (старый заказ)')+' · тестовый заказ';
+        (o.reservationLocked?' · Резерв до проверки / передачи':o.reservationExpiresAt?' · Резерв до '+formatTime(o.reservationExpiresAt):' · Без резерва (старый заказ)')+' · тестовый заказ';
       const actions=document.createElement('div');actions.className='rw-actions';
       const open=document.createElement('a');open.className='shop-outline-button';open.textContent='Открыть в боте ↗';open.href='https://t.me/Virotos_bot?start=order_'+o.id;open.target='_blank';open.rel='noopener noreferrer';actions.append(open);
       if(o.status==='quoted'&&!o.catalogFixed){
@@ -199,7 +199,7 @@ import { AUTH_STORAGE_KEY, readAuthToken, saveAuthToken, clearAuthToken, readPen
           catch(e){notice(e.message);decline.disabled=false;}
         });actions.append(decline);
       }
-      if(['new','accepted','quoted','confirmed'].includes(o.status)){
+      if(['new','accepted','quoted','confirmed'].includes(o.status)&&!(o.status==='confirmed'&&o.paymentProofSubmitted)){
         const btn=document.createElement('button');btn.type='button';btn.className='shop-outline-button';btn.textContent='Отменить заказ';
         btn.addEventListener('click',async()=>{
           if(!confirm('Отменить тестовый заказ '+o.id+'?'))return;
