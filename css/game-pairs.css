@@ -47,3 +47,6 @@
   .pairs-panel {padding:12px 15px}
 }
 @media(prefers-reduced-motion:reduce){.pairs-card{transition:none}}
+
+.pairs-mode{margin:0 0 10px;text-align:center;font-size:11px;line-height:1.4;color:var(--v-muted)}
+#pairsRetry{display:block;margin:8px auto 0}#pairsRetry[hidden]{display:none}
